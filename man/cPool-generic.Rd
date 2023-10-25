@@ -18,7 +18,7 @@
 \S4method{cPool}{ANY}(x) <- value
 }
 \arguments{
-\item{x}{Duckling object}
+\item{x}{GiottoDB object}
 }
 \description{
 Return the database connection pool object

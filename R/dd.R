@@ -1,7 +1,7 @@
 
 # Params template
 #' @name db_params
-#' @param x Duckling object
+#' @param x GiottoDB object
 #' @keywords internal
 NULL
 

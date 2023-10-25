@@ -8,7 +8,7 @@
 \S4method{validBE}{dbData}(x)
 }
 \arguments{
-\item{x}{Duckling object}
+\item{x}{GiottoDB object}
 }
 \description{
 Check if DB backend object has valid connection

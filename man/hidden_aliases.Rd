@@ -81,7 +81,7 @@
 \alias{length,dbSpatProxyData-method}
 \alias{ext,dbSpatProxyData-method}
 \alias{ext<-,dbSpatProxyData,SpatExtent-method}
-\title{Convert a Duckling object to a matrix}
+\title{Convert a GiottoDB object to a matrix}
 \usage{
 \S4method{Math}{dbMatrix}(x)
 

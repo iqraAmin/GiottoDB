@@ -1,6 +1,6 @@
-Package: Duckling
-Title: DuckDB Library for Integrative Genomics
-Version: 0.1.5
+Package: GiottoDB
+Title: Database Backend for Giotto Suite
+Version: 0.0.0.0001
 Authors@R: c(
   person("Edward", "Ruiz", email = "ecr7407@gmail.com",
 		 role = c("aut")),
@@ -10,12 +10,13 @@ Authors@R: c(
 		 role = c("aut", "cre"))
 	)
 Maintainer: Ruben Dries <rubendries@gmail.com>
-Description: Quack
+Description: Framework and structures for database-backed representations of
+ data for Giotto Suite.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
-URL: https://drieslab.github.io/duckling/, https://github.com/drieslab/duckling
-BugReports: https://github.com/drieslab/duckling/issues
+URL: https://drieslab.github.io/GiottoDB/, https://github.com/drieslab/GiottoDB
+BugReports: https://github.com/drieslab/GiottoDB/issues
 RoxygenNote: 7.2.3
 Depends:
     base (>= 3.5.0),
@@ -31,7 +32,6 @@ Imports:
     duckdb,
     dplyr,
     fs,
-    Matrix,
     magrittr,
     methods,
     pool,

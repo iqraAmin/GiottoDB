@@ -7,7 +7,7 @@
 \S4method{reconnect}{dbData}(x)
 }
 \arguments{
-\item{x}{Duckling object}
+\item{x}{GiottoDB object}
 }
 \description{
 Checks if the object still has a valid connection. If it does then it returns

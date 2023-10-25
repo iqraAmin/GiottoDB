@@ -8,7 +8,7 @@
 \S4method{remoteName}{dbData}(x)
 }
 \arguments{
-\item{x}{Duckling object}
+\item{x}{GiottoDB object}
 }
 \description{
 Returns the table name within the database the the object acts as a link to

@@ -7,7 +7,7 @@
 \S4method{disconnect}{dbData}(x, shutdown = TRUE)
 }
 \arguments{
-\item{x}{Duckling object}
+\item{x}{GiottoDB object}
 }
 \description{
 Disconnects from a database. Closes both the connection and driver objects

@@ -3,7 +3,7 @@
 \name{reconnectBackend-generic}
 \alias{reconnectBackend-generic}
 \alias{reconnectBackend}
-\title{Reconnect Duckling backend}
+\title{Reconnect GiottoDB backend}
 \usage{
 \S4method{reconnectBackend}{backendInfo}(x, with_login = FALSE, verbose = TRUE, ...)
 }
@@ -18,5 +18,5 @@
 for login info and/or prompt for password}
 }
 \description{
-Reconnect Duckling backend
+Reconnect GiottoDB backend
 }

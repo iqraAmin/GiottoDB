@@ -9,7 +9,7 @@
 \alias{sim_dbDenseMatrix}
 \alias{sim_dbPointsProxy}
 \alias{sim_dbPolygonProxy}
-\title{Simulate Duckling objects}
+\title{Simulate GiottoDB objects}
 \usage{
 sim_duckdb(data = datasets::iris, name = "test", p = NULL)
 
@@ -40,7 +40,7 @@ sim_dbPolygonProxy(data = NULL)
 A dgCMatrix object
 }
 \description{
-Create simulated Duckling objects in memory from pre-prepared data. Useful
+Create simulated GiottoDB objects in memory from pre-prepared data. Useful
 for testing purposes and examples.
 
 Simulate a dgCMatrix object

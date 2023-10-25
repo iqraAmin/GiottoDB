@@ -481,12 +481,12 @@ callback_swapCols = function(x, c1, c2) {
 
 
 # @name writeAsGDB
-# @title Write an object into the database backend as a Duckling object
+# @title Write an object into the database backend as a GiottoDB object
 # @description
 # Given a matrix, data.frame-like object, or SpatVector polygon or points,
 # write the values to database. Supports appending of information in case this
 # data should be added iteratively into the database (such as when operations
-# are parallelized). Returns a Duckling object of the analogous class.
+# are parallelized). Returns a GiottoDB object of the analogous class.
 # @param backend_ID backend_ID, or pool object with which to associate this object
 # to a specific database backend
 # @param x object to write

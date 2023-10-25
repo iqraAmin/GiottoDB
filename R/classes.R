@@ -14,10 +14,10 @@ NULL
 # Virtual parent non-spatial classes ####
 
 
-## Duckling ####
+## GiottoDB ####
 # Overarching package class
 #' @noRd
-setClass('Duckling', contains = 'VIRTUAL')
+setClass('GiottoDB', contains = 'VIRTUAL')
 
 
 ## dbData ####
@@ -31,7 +31,7 @@ setClass('Duckling', contains = 'VIRTUAL')
 #' @slot init logical. Whether the object is fully initialized
 #' @noRd
 setClass('dbData',
-         contains = c('Duckling',
+         contains = c('GiottoDB',
                       'VIRTUAL'),
          slots = list(
            data = 'ANY',
@@ -66,7 +66,7 @@ setClass('dbData',
 #' @slot hash xxhash64 hash of the db_path
 #' @export
 setClass('backendInfo',
-         contains = c('Duckling'),
+         contains = c('GiottoDB'),
          slots = list(
            driver_call = 'character',
            db_path = 'character',
@@ -568,22 +568,22 @@ print_dbPointsProxy = function(x, n, ...) {
 # Virtual Class Unions ####
 
 ## dgbIndex ####
-#' @title Virtual Class "gdbIndex" - Simple Class for Duckling indices
+#' @title Virtual Class "gdbIndex" - Simple Class for GiottoDB indices
 #' @name gdbIndex
 #' @description
 #' This is a virtual class used for indices (in signatures) for indexing
-#' and sub-assignment of 'Duckling' objects. Simple class union of 'logical',
+#' and sub-assignment of 'GiottoDB' objects. Simple class union of 'logical',
 #' 'numeric', 'integer', and  'character'.
 #' Based on the 'index' class implemented in \pkg{Matrix}
 #' @keywords internal
 #' @noRd
 setClassUnion('gdbIndex',
               members = c('logical', 'numeric', 'integer', 'character'))
-#' @title Virtual Class "gdbIndexNonChar" - Simple Class for Duckling indices
+#' @title Virtual Class "gdbIndexNonChar" - Simple Class for GiottoDB indices
 #' @name gdbIndex
 #' @description
 #' This is a virtual class used for indices (in signatures) for indexing
-#' and sub-assignment of 'Duckling' objects. Simple class union of 'logical' and
+#' and sub-assignment of 'GiottoDB' objects. Simple class union of 'logical' and
 #' 'numeric'.
 #' Based on the 'index' class implemented in \pkg{Matrix}
 #' @keywords internal
@@ -592,7 +592,7 @@ setClassUnion('gdbIndexNonChar',
               members = c('logical', 'numeric'))
 
 ## dbMF ####
-#' @title Virtual Class "dbMFData" - Simple class for Duckling matrix and dataframes
+#' @title Virtual Class "dbMFData" - Simple class for GiottoDB matrix and dataframes
 #' @name dbMFData
 #' @description
 #' This is a virtual class used to refer to dbMatrix and dbDataFrame objects as
