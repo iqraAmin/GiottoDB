@@ -672,10 +672,13 @@ append_permanent_dbpoints = function(p,
   checkmate::assert_true(terra::geomtype(SpatVector) == 'points')
   if(!is.null(custom_table_fields)) checkmate::assert_character(custom_table_fields)
 
+  last_uid <- sql_max(p, remote_name = remote_name, col = '.uID')
+
   # extract info from terra SpatVector as DT
-  geom_DT = data.table::setDT(terra::geom(SpatVector, df = TRUE))
-  atts_DT = data.table::setDT(terra::values(SpatVector))
-  chunk = cbind(geom_DT[, .(x, y)], atts_DT)
+  geom_DT <- data.table::setDT(terra::geom(SpatVector, df = TRUE))
+  atts_DT <- data.table::setDT(terra::values(SpatVector))
+  chunk <- cbind(geom_DT[, .(x, y)], atts_DT)
+  chunk[, .uID := last_uid + seq(.N)] # assign unique IDs
 
   stream_to_db(
     p = p,
@@ -872,7 +875,8 @@ setMethod(
       log_write(
         file_conn = file_conn,
         x = c(
-          'chunk: ', rounds, 'written'
+          # report which chunk and how many lines written
+          'chunk: ', rounds, 'written with', nrow(chunk), 'lines'
         ),
         main = paste('chunked read to:', remote_name)
       )
@@ -958,15 +962,15 @@ stream_reader_gef_tx <- function(x,
   }
 
   # Define locations to read from
-  gef_root = paste0("/geneExp/", bin_size)
-  gef_gene = paste0(gef_root, "/gene")
-  gef_expr = paste0(gef_root, "/expression")
+  gef_root <- paste0("/geneExp/", bin_size)
+  gef_gene <- paste0(gef_root, "/gene")
+  gef_expr <- paste0(gef_root, "/expression")
 
 
   # Find gene dataset dimensions
-  fid = rhdf5::H5Fopen(x, flags = 'H5F_ACC_RDONLY')
+  fid <- rhdf5::H5Fopen(x, flags = 'H5F_ACC_RDONLY')
   on.exit(try(rhdf5::H5Fclose(fid), silent = TRUE), add = TRUE)
-  gid = rhdf5::H5Gopen(fid, gef_root)
+  gid <- rhdf5::H5Gopen(fid, gef_root)
   on.exit(try(rhdf5::H5Gclose(gid), silent = TRUE), add = TRUE, after = FALSE)
 
 
@@ -993,7 +997,7 @@ stream_reader_gef_tx <- function(x,
   if (gene_start + n > gene_len) {
     gene_block <- gene_len - gene_start + 1L
   } else {
-    gene_block = n
+    gene_block <- n
   }
 
 
@@ -1050,6 +1054,55 @@ stream_reader_gef_tx <- function(x,
       )
       return(sv_chunk)
     }
+  )
+}
+
+
+
+
+
+
+
+# writer functions ####
+
+#' @name stream_writer_fun
+#' @title Streamable writer functions for specific file formats
+#' @description
+#' Functions to take partial reads of files and then write them to DB in a
+#' chunkwise manner. Params `x`, `n`, and `i` are required. Outputs from these
+#' functions should be in formats that are usable by classes
+#' @param x writer input. Usually data.table
+#' @param \dots additional params to pass to [createTableBE]
+NULL
+
+
+
+
+# Reader for gef workflow. Takes a data.table chunk and writes it for usage
+# with dbPointsProxy
+
+#' @rdname stream_writer_fun
+#' @inheritParams db_params
+#' @export
+stream_writer_gef_tx = function(
+    p, remote_name, x, ...
+)
+{
+  checkmate::assert_class(p, 'Pool')
+  checkmate::assert_character(remote_name, len = 1L)
+  if(!is.null(custom_table_fields)) {
+    checkmate::assert_character(custom_table_fields)
+  }
+
+  last_uid <- sql_max(p, remote_name = remote_name, col = '.uID')
+
+  x[, .uID := last_uid + seq(.N)] # assign unique IDs
+
+  stream_to_db(
+    p = p,
+    remote_name = remote_name,
+    x = x,
+    ...
   )
 }
 
