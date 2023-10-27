@@ -927,7 +927,7 @@ setMethod(
 #' @param bin_size .gef bin size to use (default is "bin100")
 #' @param output return as DT (data.table) or SV (terra SpatVector)
 #' @details
-#' Rules:\n
+#' Rules:\cr
 #' read_fun must not throw error when fewer are read than expected.\cr
 #' read_fun must not throw error when 0 are found.
 

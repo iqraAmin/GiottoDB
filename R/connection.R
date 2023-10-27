@@ -442,7 +442,7 @@ conn_to_path <- function(x) {
 # reconnectBackend ####
 
 #' @title Reconnect GiottoDB backend
-#' @name reconnectBackend-generic
+#' @name reconnectBackend
 #' @aliases reconnectBackend
 #' @param x backendInfo object or list of 1. DB driver call in string format,
 #' 2. path to the existing DB file.

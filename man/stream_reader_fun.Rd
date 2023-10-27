@@ -31,7 +31,7 @@ formats that are usable by the downstream write_fun or of classes that
 have pre-defined specific write functions (currently `SpatVector`)
 }
 \details{
-Rules:\n
+Rules:\cr
 read_fun must not throw error when fewer are read than expected.\cr
 read_fun must not throw error when 0 are found.
 }

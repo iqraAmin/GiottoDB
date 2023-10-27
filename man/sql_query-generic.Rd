@@ -4,12 +4,14 @@
 \alias{sql_query-generic}
 \title{Query a database object}
 \usage{
-\S4method{sql_query}{dbData,character}(x, statement, ...)
+\S4method{sql_query}{dbData,character}(x, statement, drop = FALSE, ...)
 }
 \arguments{
 \item{x}{a database object}
 
 \item{statement}{query statement in SQL where the FROM field should be :data:}
+
+\item{drop}{return as GiottoDB object if FALSE. dbplyr tbl if TRUE}
 
 \item{...}{additional params to pass}
 }
