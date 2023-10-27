@@ -422,23 +422,6 @@ setClass('dbSpatProxyData',
          ))
 
 
-## dbSpatData ####
-#' @name dbSpatData
-#' @title dbSpatData
-#' @description Framework for duckdb spatial extention objects.
-#' @slot data dplyr tbl that represents the database data
-#' @slot hash unique hash ID for backend
-#' @slot remote_name name of table within database that contains the data
-#' @slot extent spatial extent
-#' @noRd
-setClass('dbSpatData',
-         contains = c('dbData', 'VIRTUAL'),
-         slots = list(
-           extent = "SpatExtent"
-         ),
-         prototype = list(
-           extent = terra::ext(0, 0, 0, 0)
-         ))
 
 
 
@@ -582,24 +565,6 @@ print_dbPointsProxy = function(x, n, ...) {
 }
 
 
-
-
-
-## dbPointsST ####
-#' @title S4 dbPointsST class
-#' @description
-#' Representation of point information using an on-disk database. Intended to
-#' be used to store information that can be pulled into terra point SpatVectors
-#' @slot n_points number of points
-#' @slot feat_ID feature IDs
-#' @slot extent extent of points
-#' @slot poly_filter polygon SpatVector that is used to filter values on read-in
-#' @importClassesFrom terra SpatExtent
-#' @export
-dbPointsST = setClass(
-  'dbPointsST',
-  contains = 'dbSpatData'
-)
 
 
 

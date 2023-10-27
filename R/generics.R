@@ -21,7 +21,6 @@ setGeneric('extent_filter', function(x, extent, include, ...) standardGeneric('e
 setGeneric('filter_dbspat', function(x, by_geom, by_value, ...) standardGeneric('filter_dbspat'))
 setGeneric('dbspat_to_sv', function(x, ...) standardGeneric('dbspat_to_sv'))
 setGeneric('as.spatvector', function(x, ...) standardGeneric('as.spatvector'))
-setGeneric('as.dbspat', function(x, ...) standardGeneric("as.dbspat"))
 
 # backend system interactions ####
 setGeneric('stream_to_db', function(p, remote_name, x, ...) standardGeneric('stream_to_db'))

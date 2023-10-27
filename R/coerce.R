@@ -65,33 +65,6 @@ setMethod('as.spatvector', signature('dbSpatProxyData'), function(x, ...) {
 
 
 
-# as.dbspat ####
-#' @name as.dbspat
-#' @title Convert to dbspat
-
-#' @rdname as.dbspat
-#' @export
-setMethod('as.dbspat', signature('dbPointsProxy'), function(x, ...) {
-  duckdb_extension(cPool(x), 'spatial')
-
-  dbst = new(
-    'dbPointsST',
-    data = x@data,
-    hash = x@hash,
-    remote_name = x@remote_name,
-    init = x@init,
-    extent = x@extent)
-
-  dbst <- sql_query(
-    dbst,
-    drop = FALSE,
-    statement = "
-    SELECT ST_Point(x, y) AS geom, *
-    FROM :data:"
-  )
-})
-
-
 
 
 

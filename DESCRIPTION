@@ -62,7 +62,6 @@ Collate:
     'dbMatrix.R'
     'dbSpatProxy.R'
     'dd.R'
-    'duckdb.R'
     'fields_preset.R'
     'logging.R'
     'names.R'
