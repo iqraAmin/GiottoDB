@@ -31,9 +31,12 @@ setMethod('initialize', signature('dbSpatData'), function(.Object, extent, ...) 
 #' @family Extent processing functions
 #' @keywords internal
 setMethod('extent_calculate', signature(x = 'dbSpatData'), function(x, ...) {
-  x <- sql_query(x,
-                 drop = TRUE,
-                 "ST") %>%
+  x <- sql_query(
+    x,
+    drop = TRUE,
+    statement = "
+    SELECT ST_Extent(geom)
+    FROM :data:") %>%
     dplyr::pull()
   stopf('under construction')
 })
