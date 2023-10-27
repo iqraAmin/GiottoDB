@@ -865,21 +865,35 @@ setMethod(
 
       # write chunk with write_fun #
       # -------------------------- #
+      write_args = list(
+        p = p,
+        remote_name = remote_name,
+        x = chunk,
+        ...
+      )
+
+      # prevent passing of overwrite after initial round
+      if (rounds >= 1L) write_args$overwrite = FALSE
+
       if (!is.null(write_fun)) {
-        write_fun(p, remote_name, x = chunk, ...)
+        do.call(write_fun, args = write_args)
       } else {
-        stream_to_db(p = p, remote_name = remote_name, x = chunk, ...)
+        # if no specific write_fun passed, let stream_to_db dispatch
+        do.call(stream_to_db, args = write_args)
       }
 
+      # increment counter #
+      # ----------------- #
+      rounds = rounds + 1L
 
       # log progress #
       # ------------ #
-      rounds = rounds + 1L
       log_write(
         file_conn = file_conn,
-        x = c(
-          # report which chunk and how many lines written
-          'chunk: ', rounds, 'written with', nrow(chunk), 'lines'
+        x = paste(
+          # report which chunk and how many lines written according to nrow
+          #(may not always be appropriate)
+          'chunk: ', rounds, 'written -- nrow', nrow(chunk)
         ),
         main = paste('chunked read to:', remote_name)
       )
@@ -888,6 +902,8 @@ setMethod(
         cat("chunk:", rounds, "\n")
       }
     }
+
+    time_end = Sys.time()
 
     # report time metrics
     if (isTRUE(verbose)) {
