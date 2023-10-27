@@ -809,7 +809,7 @@ setMethod(
     checkmate::assert_numeric(n)
     checkmate::assert_function(stop_cond)
     if (!is.null(callback)) checkmate::assert_function(callback)
-    checkmate::assert_function(write_fun, args = c('p', 'remote_name', 'x'))
+    if (!is.null(write_fun)) checkmate::assert_function(write_fun, args = c('p', 'remote_name', 'x'))
     if (!is.null(log_to)) checkmate::assert_directory_exists(log_to)
 
     # coerce input connection object to pool
