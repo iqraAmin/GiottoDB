@@ -715,6 +715,7 @@ NULL
 
 # if x is [SpatVector]
 #' @rdname stream_to_db
+#' @export
 setMethod('stream_to_db', signature(p = 'Pool', remote_name = 'character', x = 'SpatVector'), function(p, remote_name, x, ...) {
   switch(
     terra::geomtype(x),
@@ -738,6 +739,7 @@ setMethod('stream_to_db', signature(p = 'Pool', remote_name = 'character', x = '
 #' @param pk character. Which column(s) to select as the primary key
 #' @param overwrite whether to overwrite if table already exists (default = FALSE)
 #' @inheritDotParams createTableBE -conn -name -fields_custom -row.names -temporary
+#' @export
 setMethod(
   'stream_to_db',
   signature(p = 'ANY', remote_name = 'character', x = 'data.frame'),
@@ -794,6 +796,7 @@ setMethod(
 #' @param report_n_chunks if `verbose = TRUE`, report in the console every
 #' n chunks that are processed.
 #' @param \dots additional params to pass to write_fun
+#' @export
 setMethod(
   'stream_to_db',
   signature(p = 'ANY', remote_name = 'character', x = 'character'),
