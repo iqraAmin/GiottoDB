@@ -42,7 +42,7 @@ Suggests:
     future.apply,
     future.callr,
     HDF5Array (>= 1.18.1),
-    hdf5r,
+    rhdf5,
     rstudioapi,
     testthat (>= 3.0.0),
     knitr,
@@ -62,7 +62,9 @@ Collate:
     'dbMatrix.R'
     'dbSpatProxy.R'
     'dd.R'
+    'duckdb.R'
     'fields_preset.R'
+    'logging.R'
     'names.R'
     'operations.R'
     'plot.R'

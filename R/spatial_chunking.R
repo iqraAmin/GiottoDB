@@ -218,26 +218,32 @@ chunk_spat_apply = function(x = NULL,
   # generate object #
   # --------------- #
   res_tbl = dplyr::tbl(p, remote_name)
-  out = switch(output,
-               'tbl' = {
-                 return(res_tbl)
-               },
-               'dbPolygonProxy' = {
-                 return(
-                   dbPolygonProxy(attributes = dbDataFrame(key = 'geom',
-                                                           data = dplyr::tbl(p, paste0(remote_name, '_attr')),
-                                                           hash = x@hash,
-                                                           remote_name = paste0(remote_name, '_attr'),
-                                                           init = TRUE),
-                                  data = res_tbl,
-                                  hash = x@hash,
-                                  remote_name = remote_name,
-                                  init = TRUE)
-                 )
-               },
-               'dbPointsProxy' = {
-                 # TODO
-               })
+  out = switch(
+    output,
+    'tbl' = {
+      return(res_tbl)
+    },
+    'dbPolygonProxy' = {
+      return(
+        dbPolygonProxy(
+          attributes = dbDataFrame(
+            key = 'geom',
+            data = dplyr::tbl(p, paste0(remote_name, '_attr')),
+            hash = x@hash,
+            remote_name = paste0(remote_name, '_attr'),
+            init = TRUE
+          ),
+          data = res_tbl,
+          hash = x@hash,
+          remote_name = remote_name,
+          init = TRUE
+        )
+      )
+    },
+    'dbPointsProxy' = {
+      # TODO
+    }
+  )
 
   return(out)
 }

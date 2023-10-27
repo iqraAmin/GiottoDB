@@ -376,45 +376,66 @@ getBackendPath = function(backend_ID) {
 setMethod('evaluate_conn', signature(conn = 'character'),
           function(conn, mode = 'pool', ...)
 {
-  mode = match.arg(mode, choices = c('pool', 'conn'))
-  if(mode == 'pool') {
-    return(getBackendPool(conn))
-  } else if(mode == 'conn') {
-    return(getBackendConn(conn))
-  }
+  mode = match.arg(mode, choices = c('pool', 'conn', 'path'))
+  switch(
+    mode,
+    'pool' = getBackendPool(conn),
+    'conn' = getBackendConn(conn),
+    'path' = {
+      getBackendPool(conn) %>%
+        pool::localCheckout() %>%
+        conn_to_path()
+    }
+  )
 })
 setMethod('evaluate_conn', signature(conn = 'Pool'),
           function(conn, mode = 'pool', ...)
 {
-  mode = match.arg(mode, choices = c('pool', 'conn'))
-  if(mode == 'pool') {
-    return(conn)
-  } else if(mode == 'conn') {
-    return(pool::poolCheckout(conn))
-  }
+  mode = match.arg(mode, choices = c('pool', 'conn', 'path'))
+  switch(
+    mode,
+    'pool' = conn,
+    'conn' = pool::poolCheckout(conn),
+    'path' = pool_to_path(conn)
+  )
 })
 setMethod('evaluate_conn', signature(conn = 'DBIConnection'),
-          function(conn, mode = 'conn', ...)
+          function(conn, mode = c('conn', 'path'), ...)
 {
-  if(mode == 'pool') stopf('Cannot get pool from conn object')
-  if(class(conn) %in% c("Microsoft SQL Server",
-                        "PqConnection",
-                        "RedshiftConnection",
-                        "BigQueryConnection",
-                        "SQLiteConnection",
-                        "duckdb_connection",
-                        "Spark SQL",
-                        "OraConnection",
-                        "Oracle",
-                        "Snowflake")) {
-    return(conn)
-  } else {
-    stopf(class(conn), "is not a supported connection type.")
-  }
+  switch(
+    mode,
+    'pool' = stopf('Cannot get pool from conn object'),
+    'conn' = {
+      if(class(conn) %in% c("Microsoft SQL Server",
+                            "PqConnection",
+                            "RedshiftConnection",
+                            "BigQueryConnection",
+                            "SQLiteConnection",
+                            "duckdb_connection",
+                            "Spark SQL",
+                            "OraConnection",
+                            "Oracle",
+                            "Snowflake")) {
+        return(conn)
+      } else {
+        stopf(class(conn), "is not a supported connection type.")
+      }
+    },
+    'path' = conn_to_path(conn)
+  )
 })
 
 
 
+
+pool_to_path <- function(x) {
+  conn = pool::localCheckout(x)
+  conn_to_path(conn)
+}
+
+conn_to_path <- function(x) {
+  x@driver@dbdir
+}
 
 
 

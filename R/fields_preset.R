@@ -90,7 +90,11 @@ createTableBE = function(conn,
                          temporary = FALSE) {
   conn = evaluate_conn(conn)
 
-  if(is.null(pk)) {
+  # - IF a primary key is NOT desired at table creation,
+  #   use the default pool method of generating an SQL statement.
+  #
+  # - IF a primary key IS desired, send to custom SQL generation function.
+  if (is.null(pk)) {
     statement = pool::sqlCreateTable(
       con = conn,
       table = name,
@@ -100,17 +104,24 @@ createTableBE = function(conn,
       ...
     )
   } else {
-    statement = sql_create_pk_table(con = conn, #? why use this function? what happens if you want to overwrite a table?
-                                    table = name,
-                                    fields = fields_df,
-                                    pk = pk,
-                                    row.names = row.names,
-                                    temporary = temporary,
-                                    ...)
-    if(!is.null(fields_custom)) {
-      statement = sql_create_table_field_swap(statement = statement,
-                                              fields_custom = fields_custom)
-    }
+    statement = sql_create_pk_table(
+      con = conn,
+      table = name,
+      fields = fields_df,
+      pk = pk,
+      row.names = row.names,
+      temporary = temporary,
+      ...
+    )
+  }
+
+  # if custom fields are desired, edit the SQL statement to include those
+  # instructions
+  if (!is.null(fields_custom)) {
+    statement = sql_create_table_field_swap(
+      statement = statement,
+      fields_custom = fields_custom
+    )
   }
   return(pool::dbExecute(conn = conn, statement = statement))
 }

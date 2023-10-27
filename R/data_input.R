@@ -42,6 +42,14 @@ readMatrixDT = function(path,
 # colnames collection sections
 
 
+
+
+
+
+
+
+
+
 #' @name streamToDB_fread
 #' @title Stream large flat files to database backend using fread
 #' @description
@@ -589,18 +597,7 @@ callback_swapCols = function(x, c1, c2) {
 
 
 
-# internal function to stream specific data types into the database backend.
-# if custom_table_fields is provided and the table does not yet exist then
-# a specific DB table will be created with constraints. In all cases,
-# values will be fed to `dbWriteTable` with `append = TRUE` so that the values
-# will be appended, and if a specific table does not yet exist, it will be created.
-# Right now this is mainly intended only for spatial objects since they are the
-# only ones that require in-memory chunked processing
-setMethod('stream_to_db', signature(p = 'Pool', remote_name = 'character', x = 'SpatVector'), function(p, remote_name, x, ...) {
-  switch(terra::geomtype(x),
-         'polygons' = append_permanent_dbpoly(p = p, remote_name = remote_name, SpatVector = x, ...),
-         'points' = append_permanent_dbpoints(p = p, remote_name = remote_name, SpatVector = x, ...))
-})
+
 
 
 
@@ -617,37 +614,20 @@ append_permanent_dbpoly = function(p,
   checkmate::assert_true(terra::geomtype(SpatVector) == 'polygons')
   if(!is.null(custom_table_fields)) checkmate::assert_character(custom_table_fields)
   if(!is.null(custom_table_fields_attr)) checkmate::assert_character(custom_table_fields_attr)
+
+
+  # get attribute table name
   attr_name = paste0(remote_name, '_attr')
 
-  # custom table creation
-  # allows setting of specific data types (that do not conflict with data)
-  # allows setting of keys and certain constraints
+  # assign start index
   if(!existsTableBE(x = p, remote_name = remote_name)) {
-    if(!is.null(custom_table_fields)) {
-      pool::dbCreateTable(
-        conn = p,
-        name = remote_name,
-        fields = custom_table_fields,
-        row.names = NA,
-        temporary = FALSE
-      )
-    }
-    if(!is.null(custom_table_fields_attr)) {
-      pool::dbCreateTable(
-        conn = p,
-        name = attr_name,
-        fields = custom_table_fields_attr,
-        row.names = NA,
-        temporary = FALSE
-      )
-    }
     start_index = 0L
   } else {
     start_index = sql_max(p, attr_name, 'geom')
   }
 
 
-  # extract info
+  # extract info from terra SpatVector as DT
   geom_DT = terra::geom(SpatVector, df = TRUE) %>%
     data.table::setDT()
   atts_DT = terra::values(SpatVector) %>%
@@ -659,22 +639,28 @@ append_permanent_dbpoly = function(p,
   geom_DT[, geom := geom + start_index]
   atts_DT[, geom := geom + start_index]
 
+
   # append/write info
-  pool::dbWriteTable(conn = p,
-                     name = remote_name,
-                     value = geom_DT,
-                     append = TRUE,
-                     temporary = FALSE)
-  pool::dbWriteTable(conn = p,
-                     name = attr_name,
-                     value = atts_DT,
-                     append = TRUE,
-                     temporary = FALSE)
+  stream_to_db(
+    p = p,
+    remote_name = remote_name,
+    x = geom_DT,
+    custom_table_fields = custom_table_fields,
+    ...
+  )
+  stream_to_db(
+    p = p,
+    remote_name = remote_name,
+    x = atts_DT,
+    custom_table_fields = custom_table_fields_attr,
+    ...
+  )
 }
 
 
 
 
+# Append information from a terra SpatVector points to the db
 append_permanent_dbpoints = function(p,
                                      SpatVector,
                                      remote_name,
@@ -686,67 +672,380 @@ append_permanent_dbpoints = function(p,
   checkmate::assert_true(terra::geomtype(SpatVector) == 'points')
   if(!is.null(custom_table_fields)) checkmate::assert_character(custom_table_fields)
 
-  # custom table creation
-  # allows setting of specific data types (that do not conflict with data)
-  # allows setting of keys and certain constraints
-  if(!existsTableBE(x = p, remote_name = remote_name)) {
-    if(!is.null(custom_table_fields)) {
-      pool::dbCreateTable(
-        conn = p,
-        name = remote_name,
-        fields = custom_table_fields,
-        row.names = NA,
-        temporary = FALSE
-      )
-    }
-  }
-
-
-  # extract info
+  # extract info from terra SpatVector as DT
   geom_DT = data.table::setDT(terra::geom(SpatVector, df = TRUE))
   atts_DT = data.table::setDT(terra::values(SpatVector))
   chunk = cbind(geom_DT[, .(x, y)], atts_DT)
 
-  # append/write info
-  pool::dbWriteTable(conn = p,
-                     name = remote_name,
-                     value = chunk,
-                     append = TRUE,
-                     temporary = FALSE)
+  stream_to_db(
+    p = p,
+    remote_name = remote_name,
+    x = chunk,
+    custom_table_fields = custom_table_fields,
+    ...
+  )
 }
 
 
 
+
+
+
+# stream_to_db methods ####
+
+#' @name stream_to_db
+#' @title Stream data and write to DB
+#' @description
+#' Stream specific information into the database backend, whether for initial
+#' data ingestion or for chunked processes.\cr
+#' if custom_table_fields is provided and the table does not yet exist then
+#' a specific DB table will be created with constraints. In all cases,
+#' values will be fed to `dbWriteTable` with `append = TRUE` so that the values
+#' will be appended, and if a specific table does not yet exist, it will be created.
+#' @param p connection info or object (must be coercible to pool through
+#' [evaluate_conn])
+#' @param remote_name character. name of table in database to write to.
+#' @param x information to stream
+#' @keywords internal
+NULL
+
+
+# if x is [SpatVector]
+#' @rdname stream_to_db
+setMethod('stream_to_db', signature(p = 'Pool', remote_name = 'character', x = 'SpatVector'), function(p, remote_name, x, ...) {
+  switch(
+    terra::geomtype(x),
+    'polygons' = append_permanent_dbpoly(
+      p = p, remote_name = remote_name, SpatVector = x, ...
+    ),
+    'points' = append_permanent_dbpoints(
+      p = p, remote_name = remote_name, SpatVector = x, ...
+    )
+  )
+})
+
+
+# If x is [data.frame], append it to the database table it is targeted towards.
+# If the table does not exist yet, generate it.
+# Usually the last `stream_to_db()` call in the chain
+
+#' @rdname stream_to_db
+#' @param custom_table_fields named character vector of columns and manually
+#' assigned data types along with any other in-line constraints
+#' @param pk character. Which column(s) to select as the primary key
+#' @param overwrite whether to overwrite if table already exists (default = FALSE)
+#' @inheritDotParams createTableBE -conn -name -fields_custom -row.names -temporary
 setMethod(
   'stream_to_db',
-  signature(p = 'Pool', remote_name = 'character', x = 'data.frame'),
-  function(p, remote_name, x, custom_table_fields = NULL, ...) {
-    checkmate::assert_class(p, 'Pool')
+  signature(p = 'ANY', remote_name = 'character', x = 'data.frame'),
+  function(p, remote_name, x, custom_table_fields = NULL, pk = NULL, overwrite = FALSE, ...) {
     checkmate::assert_character(remote_name, len = 1L)
 
-    # custom table creation
-    # allows setting of specific data types (that do not conflict with data)
-    # allows setting of keys and certain constraints
-    if(!existsTableBE(x = p, remote_name = remote_name)) {
-      if(!is.null(custom_table_fields)) {
-        pool::dbCreateTable(
-          conn = p,
-          name = remote_name,
-          fields = custom_table_fields,
-          row.names = NA,
-          temporary = FALSE
-        )
-      }
+    # coerce input connection object to pool
+    p = evaluate_conn(conn = p, mode = 'pool')
+
+    # overwrite if needed
+    overwrite_handler(p = p, remote_name = remote_name, overwrite = overwrite)
+
+    # table creation if needed
+    if (!existsTableBE(x = p, remote_name = remote_name)) {
+      createTableBE(
+        conn = p,
+        name = remote_name,
+        fields_custom = custom_table_fields,
+        row.names = NA,
+        temporary = FALSE,
+        pk = pk,
+        ...
+      )
     }
 
     # append/write info
-    pool::dbWriteTable(conn = p,
-                       name = remote_name,
-                       value = x,
-                       append = TRUE,
-                       temporary = FALSE)
+    pool::dbWriteTable(
+      conn = p,
+      name = remote_name,
+      value = x,
+      append = TRUE,
+      temporary = FALSE
+    )
   })
 
+# if x is [character], assume that it is a filepath to read from.
+#' @rdname stream_to_db
+#' @param read_fun function. Controls how information should be read. Should
+#' expose formal arguments 'x', 'n', and 'callback'
+#' @param n number of units (usually rows) to read per chunk
+#' @param stop_cond function. Function to run on each chunk. Will stop the
+#' chunk read looping when evaluates to TRUE.
+#' @param callback (optional) function. Single param function that will take a
+#' chunk as input, then modify it into the format expected by the `write_fun`
+#' and db representation
+#' @param write_fun (optional) function. Controls how the chunk is written to
+#' the database. Default functions will automatically run for `data.table` and
+#' terra `SpatVector` chunks.
+#' @param verbose be verbose
+#' @param log_to directory path. Create a logfile in this directory that logs
+#' the progress of the chunked read. Any specified directory must exist. Setting
+#' `NULL` logs to the same directory as the database
+#' @param report_n_chunks if `verbose = TRUE`, report in the console every
+#' n chunks that are processed.
+#' @param \dots additional params to pass to write_fun
+setMethod(
+  'stream_to_db',
+  signature(p = 'ANY', remote_name = 'character', x = 'character'),
+  function(p, remote_name, x, # params for write_fun
+           read_fun,
+           n = 10L,
+           stop_cond = function(x) nrow(x) == 0L, # stop iterating when TRUE
+           callback = NULL, # default is no change
+           write_fun = NULL,
+           verbose = TRUE,
+           log_to = NULL,
+           report_n_chunks = 100L,
+           ...) {
+
+    checkmate::assert_character(remote_name, len = 1L)
+    checkmate::assert_function(read_fun, args = c('x', 'n', 'i'))
+    checkmate::assert_numeric(n)
+    checkmate::assert_function(stop_cond)
+    checkmate::assert_function(callback)
+    checkmate::assert_function(write_fun, args = c('p', 'remote_name', 'x'))
+    if (!is.null(log_to)) checkmate::assert_directory_exists(log_to)
+
+    # coerce input connection object to pool
+    p = evaluate_conn(conn = p, mode = 'pool')
+
+    # values to track
+    rounds = 0L
+    time_start = Sys.time()
+    started_at = proc.time()
+
+    # log info #
+    # -------- #
+    if (is.null(log_to)) {
+      file_conn <- log_to_dbdir(p)
+    } else {
+      file_conn <- log_create(log_to)
+    }
+    on.exit(close(file_conn), add = TRUE)
+    if (verbose) wrap_msg('Logging to:', getOption('gdb.last_logpath'))
+
+    # use read_fun to iterate through chunks #
+    # -------------------------------------- #
+    repeat {
+
+      # read_fun needs 3 params
+      # 1. [x] reader input
+      # 2. [n] n units to read per round
+      # 3. [i] ith round of reading (0 indexed here)
+      # read_fun must not throw error when fewer are read than expected.
+      # read_fun must not throw error when 0 are found.
+      chunk = read_fun(
+        x = x,
+        n = n,
+        i = rounds
+      )
+
+      # check chunk for stop condition (chunk of size 0 is default) #
+      # ----------------------------------------------------------- #
+      if (stop_cond(chunk)) break
+
+      # run callback on chunk #
+      # --------------------- #
+      if (!is.null(callback)) {
+        chunk = callback(chunk)
+      }
+
+      # write chunk with write_fun #
+      # -------------------------- #
+      if (!is.null(write_fun)) {
+        write_fun(p, remote_name, x = chunk, ...)
+      } else {
+        stream_to_db(p = p, remote_name = remote_name, x = chunk, ...)
+      }
+
+
+      # log progress #
+      # ------------ #
+      rounds = rounds + 1L
+      log_write(
+        file_conn = file_conn,
+        x = c(
+          'chunk: ', rounds, 'written'
+        ),
+        main = paste('chunked read to:', remote_name)
+      )
+      if (isTRUE(verbose) &&
+          rounds %% report_n_chunks == 0L) {
+        cat("chunk:", rounds, "\n")
+      }
+    }
+
+    # report time metrics
+    if (isTRUE(verbose)) {
+      cat('\n[Finished]\n')
+      cat(rounds, 'chunks written\n')
+      cat('Start  :', as.character(time_start), '\n')
+      cat('End    :', as.character(time_end), '\n')
+      cat('Elapsed:', data.table::timetaken(started_at))
+    }
+
+    log_write(
+      file_conn = file_conn,
+      x = c(
+        '[Finished]\n',
+        rounds, 'chunks written\n',
+        'Elapsed:', data.table::timetaken(started_at)
+      )
+    )
+
+    return(TRUE)
+  })
+
+
+
+
+# reader functions ####
+
+# read_fun needs 3 params
+# 1. [x] reader input
+# 2. [n] n units to read per round
+# 3. [i] ith round of reading (0 indexed here)
+# read_fun must not throw error when fewer are read than expected.
+# read_fun must not throw error when 0 are found.
+
+#' @name stream_reader_fun
+#' @title Streamable reader functions for specific file formats
+#' @description
+#' Functions to access files and then read them in a chunkwise manner. Params
+#' `x`, `n`, and `i` are required. Outputs from these functions should be in
+#' formats that are usable by the downstream write_fun or of classes that
+#' have pre-defined specific write functions (currently `SpatVector`)
+#' @param x reader input. Usually character filepath to file
+#' @param n units (however defined in reader) to read per round
+#' @param i 'i'th round of reading (0 indexed)
+#' @param bin_size .gef bin size to use (default is "bin100")
+#' @param output return as DT (data.table) or SV (terra SpatVector)
+#' @details
+#' Rules:\n
+#' read_fun must not throw error when fewer are read than expected.\cr
+#' read_fun must not throw error when 0 are found.
+
+#' @rdname stream_reader_fun
+#' @param bin_size .gef data bin size to use
+#' @export
+stream_reader_gef_tx <- function(x,
+                                 n = 4000L,
+                                 i = 0L,
+                                 bin_size = "bin100",
+                                 output = c('DT', 'SV')) {
+  checkmate::assert_file(x)
+  checkmate::assert_numeric(i)
+  checkmate::assert_character(bin_size)
+  output = match.arg(output, choices = c('DT', 'SV'))
+
+  # for gef reading, i stands for number of gene results to retrieve at a time
+
+  # require rhdf5 package
+  pkg_name = 'rhdf5'
+  if (!requireNamespace(pkg_name, quietly = TRUE)) {
+    stopf(
+      pkg_name, "is not yet installed.
+          To install: \n", "if(!requireNamespace('BiocManager', quietly = TRUE)) install.packages('BiocManager');\nBiocManager::install('",
+      pkg_name, "')"
+    )
+  }
+
+  # Define locations to read from
+  gef_root = paste0("/geneExp/", bin_size)
+  gef_gene = paste0(gef_root, "/gene")
+  gef_expr = paste0(gef_root, "/expression")
+
+
+  # Find gene dataset dimensions
+  fid = rhdf5::H5Fopen(x, flags = 'H5F_ACC_RDONLY')
+  on.exit(try(rhdf5::H5Fclose(fid), silent = TRUE), add = TRUE)
+  gid = rhdf5::H5Gopen(fid, gef_root)
+  on.exit(try(rhdf5::H5Gclose(gid), silent = TRUE), add = TRUE, after = FALSE)
+
+
+  group_ls <- rhdf5::h5ls(gid) %>%
+    data.table::setDT()
+  gene_len <- group_ls[name == 'gene', dim] %>%
+    as.integer()
+  # close fid and gid handles
+  rhdf5::h5closeAll()
+
+  # Find gene indices to read
+  gene_start <- n * i + 1L
+
+  # condition: gene start is greater than gene length
+  # - send empty spatvector (end condition where nrow(sv) == 0)
+  if (gene_start > gene_len) {
+    return(terra::vect())
+  }
+
+  # condition: end of gene list is shorter than block
+  # - create smaller chunk
+  if (gene_start + n > gene_len) {
+    gene_block <- gene_len - gene_start + 1L
+  } else {
+    gene_block = n
+  }
+
+
+  # Read gene information
+  geneDT <- rhdf5::h5read(
+    file = x,
+    name = gef_gene,
+    index = NULL,
+    start = gene_start,
+    stride = NULL, # sampling
+    block = gene_block, # selection unit
+    count = 1L # how many blocks
+  ) %>%
+    data.table::setDT()
+  geneDT[, gene := as.character(gene)]
+  geneDT[, offset := as.integer(offset)]
+  geneDT[, count := as.integer(count)]
+
+
+  # read expression information dependent on gene subset
+  expr_start <- geneDT[1L, offset] + 1
+  expr_block <- geneDT[.N, offset + count] - expr_start + 1
+
+  exprDT <- rhdf5::h5read(
+    file = x,
+    name = gef_expr,
+    index = NULL,
+    start = expr_start,
+    stride = NULL, # sampling
+    block = expr_block, # selection unit
+    count = 1L # how many blocks
+  ) %>%
+    data.table::setDT()
+  exprDT[, x := as.integer(x)]
+  exprDT[, y := as.integer(y)]
+  exprDT[, count := as.integer(count)]
+
+  # append genes information to spatial expression
+  exprDT[, 'genes' := rep(x = geneDT$gene, geneDT$count)]
+  data.table::setnames(exprDT, old = 'genes', new = 'feat_ID')
+  data.table::setcolorder(exprDT, c('x', 'y', 'feat_ID', 'count'))
+
+  switch(
+    output,
+    'DT' = return(exprDT),
+    'SV' = {
+      # convert to spatvector points
+      sv_chunk = terra::vect(
+        x = as.matrix(exprDT[,.(x,y)]),
+        atts = exprDT[,.(count, feat_ID)]
+      )
+      return(sv_chunk)
+    }
+  )
+}
 
 
 
