@@ -88,6 +88,7 @@ sql_gen_simple_filter = function(x, select, where, ...) {
 #' Integrates into dplyr chains. More general purpose than sql_gen* functions
 #' @param x a database object
 #' @param statement query statement in SQL where the FROM field should be :data:
+#' @param drop return as GiottoDB object if FALSE. dbplyr tbl if TRUE
 #' @param ... additional params to pass
 #' @details
 #' Prepared SQL with properly quoted parameters are provided through the
@@ -96,22 +97,29 @@ sql_gen_simple_filter = function(x, select, where, ...) {
 #' queried, effectively appending the new instructions. This set of appended
 #' instructions are then used to update the object.
 #' @keywords internal
-setMethod('sql_query', signature(x = 'dbData', statement = 'character'),
-          function(x, statement, ...) {
-            x = reconnect(x)
-            p = cPool(x)
-            conn = pool::poolCheckout(p)
-            on.exit(try(pool::poolReturn(conn), silent = TRUE))
+setMethod(
+  'sql_query', signature(x = 'dbData', statement = 'character'),
+  function(x, statement, drop = FALSE, ...)
+  {
+    x = reconnect(x)
+    p = cPool(x)
+    conn = pool::poolCheckout(p)
+    on.exit(try(pool::poolReturn(conn), silent = TRUE))
 
-            statement = gsub(pattern = ':data:',
-                             replacement = paste0('(', dbplyr::sql_render(query  = x[], con = conn), ')'),
-                             x = statement,
-                             fixed = TRUE)
-            pool::poolReturn(conn)
+    statement = gsub(
+      pattern = ':data:',
+      replacement = paste0('(', dbplyr::sql_render(query  = x[], con = conn), ')'),
+      x = statement,
+      fixed = TRUE
+    )
+    pool::poolReturn(conn)
 
-            x[] = dplyr::tbl(src = p, dbplyr::sql(statement))
-            x
-          })
+    res <- dplyr::tbl(src = p, dbplyr::sql(statement))
+
+    if (isTRUE(drop)) return(res)
+    x[] = res
+    x
+  })
 
 
 

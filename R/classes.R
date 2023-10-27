@@ -422,16 +422,16 @@ setClass('dbSpatProxyData',
          ))
 
 
-## dbSpatSTData ####
-#' @name dbSpatSTData
-#' @title dbSpatSTData
+## dbSpatData ####
+#' @name dbSpatData
+#' @title dbSpatData
 #' @description Framework for duckdb spatial extention objects.
 #' @slot data dplyr tbl that represents the database data
 #' @slot hash unique hash ID for backend
 #' @slot remote_name name of table within database that contains the data
 #' @slot extent spatial extent
 #' @noRd
-setClass('dbSpatSTData',
+setClass('dbSpatData',
          contains = c('dbData', 'VIRTUAL'),
          slots = list(
            extent = "SpatExtent"
@@ -598,7 +598,7 @@ print_dbPointsProxy = function(x, n, ...) {
 #' @export
 dbPointsST = setClass(
   'dbPointsST',
-  contains = 'dbSpatSTData'
+  contains = 'dbSpatData'
 )
 
 

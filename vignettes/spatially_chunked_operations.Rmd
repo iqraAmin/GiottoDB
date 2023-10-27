@@ -104,6 +104,10 @@ out |> dplyr::filter(poly_ID != 'NA')
 
 
 
+```{r}
+b = createBackend()
+duckdb_extension(getBackendPool(b), 'spatial')
+```
 
 
 
