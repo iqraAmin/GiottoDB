@@ -808,7 +808,7 @@ setMethod(
     checkmate::assert_function(read_fun, args = c('x', 'n', 'i'))
     checkmate::assert_numeric(n)
     checkmate::assert_function(stop_cond)
-    checkmate::assert_function(callback)
+    if (!is.null(callback)) checkmate::assert_function(callback)
     checkmate::assert_function(write_fun, args = c('p', 'remote_name', 'x'))
     if (!is.null(log_to)) checkmate::assert_directory_exists(log_to)
 
