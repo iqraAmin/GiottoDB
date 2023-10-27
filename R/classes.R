@@ -396,6 +396,10 @@ print_dbDataFrame = function(x, n, ...) {
 
 # Virtual parent spatial classes ####
 
+# consider ProxyData as the storage format?
+# consider SpatST as the more flexible function that can be non-permanent?
+
+
 ## dbSpatProxyData ####
 #' @name dbSpatProxyData
 #' @title dbSpatProxyData
@@ -416,6 +420,28 @@ setClass('dbSpatProxyData',
            extent = terra::ext(0, 0, 0 ,0),
            poly_filter = NULL
          ))
+
+
+## dbSpatSTData ####
+#' @name dbSpatSTData
+#' @title dbSpatSTData
+#' @description Framework for duckdb spatial extention objects.
+#' @slot data dplyr tbl that represents the database data
+#' @slot hash unique hash ID for backend
+#' @slot remote_name name of table within database that contains the data
+#' @slot extent spatial extent
+#' @noRd
+setClass('dbSpatSTData',
+         contains = c('dbData', 'VIRTUAL'),
+         slots = list(
+           extent = "SpatExtent"
+         ),
+         prototype = list(
+           extent = terra::ext(0, 0, 0, 0)
+         ))
+
+
+
 
 # Spatial Data Container Classes ####
 
@@ -554,6 +580,26 @@ print_dbPointsProxy = function(x, n, ...) {
   writeLines(paste(indent, p[-(1:3)])) # skip first header lines
   if(!refresh) cat('\n# set options(gdb.update_show = TRUE) to calculate ??')
 }
+
+
+
+
+
+## dbPointsST ####
+#' @title S4 dbPointsST class
+#' @description
+#' Representation of point information using an on-disk database. Intended to
+#' be used to store information that can be pulled into terra point SpatVectors
+#' @slot n_points number of points
+#' @slot feat_ID feature IDs
+#' @slot extent extent of points
+#' @slot poly_filter polygon SpatVector that is used to filter values on read-in
+#' @importClassesFrom terra SpatExtent
+#' @export
+dbPointsST = setClass(
+  'dbPointsST',
+  contains = 'dbSpatSTData'
+)
 
 
 

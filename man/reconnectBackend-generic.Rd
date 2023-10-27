@@ -8,7 +8,8 @@
 \S4method{reconnectBackend}{backendInfo}(x, with_login = FALSE, verbose = TRUE, ...)
 }
 \arguments{
-\item{x}{backendInfo object}
+\item{x}{backendInfo object or list of 1. DB driver call in string format,
+2. path to the existing DB file.}
 
 \item{with_login}{(default = FALSE) flag to check R environment variables}
 

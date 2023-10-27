@@ -444,7 +444,8 @@ conn_to_path <- function(x) {
 #' @title Reconnect GiottoDB backend
 #' @name reconnectBackend-generic
 #' @aliases reconnectBackend
-#' @param x backendInfo object
+#' @param x backendInfo object or list of 1. DB driver call in string format,
+#' 2. path to the existing DB file.
 #' @param with_login (default = FALSE) flag to check R environment variables
 #' @param verbose be verbose
 #' @param ... additional params to pass
@@ -478,14 +479,64 @@ setMethod(
 
   # regenerate connection pool object
   con_pool = do.call(what = create_connection_pool, args = list_args)
-  .DB_ENV[[b_ID]]$pool = con_pool
-  .DB_ENV[[b_ID]]$info = x
+  .DB_ENV[[b_ID]]$pool <- con_pool
+  .DB_ENV[[b_ID]]$info <- x
 
   return(invisible())
 })
 
 
+#' @rdname reconnectBackend
+#' @export
+setMethod(
+  'reconnectBackend', signature('list'),
+  function(x, with_login = FALSE, verbose = TRUE, ...)
+  {
+    dbdrv <- x[[1]]
+    dbpath <- normalizePath(x[[2]])
 
+    if (!inherits(dbdrv, "character")) {
+      stopf(
+        "reconnectBackend:
+        First value in list must be a DB driver function call written as character
+        e.g: \"duckdb::duckdb()\""
+      )
+    }
+    if (!inherits(dbpath, 'character')) {
+      stopf(
+        "reconnectBackend:
+        Second value in list must be a filepath to the DB"
+      )
+    }
+
+
+    # test the driver to be functional in memory
+    test_db_path = paste0(tempdir(), '/test.db')
+    test_res <- try(create_connection_pool(dbdrv, dbdir = test_db_path),
+                    silent = TRUE)
+    if (!inherits(test_res, 'try-error')) {
+      on.exit(pool::poolClose(test_res), add = TRUE)
+      on.exit(file.remove(test_db_path), add = TRUE)
+    } else {
+      stopf(
+        "reconnectBackend:
+        First value in list must be a DB driver function call written as character
+        e.g: \"duckdb::duckdb()\""
+      )
+    }
+
+    # create backend info
+    bInfo <- new(
+      'backendInfo',
+      driver_call = dbdrv,
+      db_path = dbpath,
+      hash = calculate_backend_id(dbpath)
+    )
+
+    # attempt reconnect
+    reconnectBackend(x = bInfo, ...)
+  }
+)
 
 
 

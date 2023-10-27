@@ -979,6 +979,8 @@ stream_reader_gef_tx <- function(x,
   # Find gene indices to read
   gene_start <- n * i + 1L
 
+
+  # ERROR CATCHES
   # condition: gene start is greater than gene length
   # - send empty spatvector (end condition where nrow(sv) == 0)
   if (gene_start > gene_len) {
@@ -992,6 +994,9 @@ stream_reader_gef_tx <- function(x,
   } else {
     gene_block = n
   }
+
+
+  # TODO add splitting of the hyperslab here in order to parallelize the read
 
 
   # Read gene information
