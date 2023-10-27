@@ -752,6 +752,7 @@ setMethod(
       createTableBE(
         conn = p,
         name = remote_name,
+        fields_df = x[1,], # sample from first row for datatype
         fields_custom = custom_table_fields,
         row.names = NA,
         temporary = FALSE,
