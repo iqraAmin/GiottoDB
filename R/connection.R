@@ -632,19 +632,19 @@ setMethod('reconnect', signature(x = 'dbData'),
 
 
 #' @title Write a persistent table to the database
-#' @name writeRemoteTable
-#' @param cPool database connection pool object
+#' @name writeTableBE
+#' @param p database connection pool object
 #' @param remote_name name to assign the table within the database
-#' @param value table to write
+#' @param value dataframe (or coercible) to write to backend
 #' @param ... additional params to pass to DBI::dbWriteTable()
 #' @export
-writeTableBE = function(cPool, remote_name, value, ...) {
-  DBI::dbWriteTable(conn = cPool, name = remote_name, value = value, ...)
+writeTableBE = function(p, remote_name, value, ...) {
+  pool::dbWriteTable(conn = p, name = remote_name, value = value, ...)
 }
 
 
 
-#' @title Create a table from database
+#' @title Open a table from database
 #' @name tableBE
 #' @param cPool database connection pool object
 #' @param remote_name name of table with database

@@ -873,7 +873,7 @@ setMethod(
       )
 
       # prevent passing of overwrite after initial round
-      if (rounds >= 1L) write_args$overwrite = FALSE
+      if (rounds >= 1L) write_args$overwrite = NULL
 
       if (!is.null(write_fun)) {
         do.call(write_fun, args = write_args)

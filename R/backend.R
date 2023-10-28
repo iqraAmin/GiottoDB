@@ -74,6 +74,7 @@ setMethod('initialize', signature(.Object = 'dbData'),
 # Determine if table already exists. If it does then send an error if overwrite
 # FALSE or remove the table if overwrite is TRUE in preparation for recreation
 overwrite_handler = function(p, remote_name, overwrite = FALSE) {
+  if (is.null(overwite)) return() # ignore if overwrite is NULL
   checkmate::assert_character(remote_name, len = 1L)
   checkmate::assert_logical(overwrite, len = 1L)
   p = evaluate_conn(p, mode = 'pool')
@@ -85,7 +86,8 @@ overwrite_handler = function(p, remote_name, overwrite = FALSE) {
     }
     else {
       stopf(remote_name, 'already exists.
-          Set overwrite = TRUE to recreate it.')
+          Set overwrite = TRUE to recreate it
+          or NULL to append to it.')
     }
   }
 }
