@@ -872,8 +872,8 @@ setMethod(
         ...
       )
 
-      # prevent passing of overwrite after initial round
-      if (rounds >= 1L) write_args$overwrite = NULL
+      # set overwrite to append after initial round
+      if (rounds >= 1L) write_args$overwrite = "append"
 
       if (!is.null(write_fun)) {
         do.call(write_fun, args = write_args)
