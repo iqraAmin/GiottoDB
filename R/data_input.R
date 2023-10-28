@@ -1111,6 +1111,11 @@ stream_writer_gef_tx = function(
   checkmate::assert_character(remote_name, len = 1L)
   checkmate::assert_data_frame(x)
 
+  # When there are no records in table yet
+  if (!existsTableBE(x = p, remote_name = remote_name)) {
+    last_uid = 0L
+  }
+
   last_uid <- sql_max(p, remote_name = remote_name, col = '.uID')
 
   x[, .uID := last_uid + seq(.N)] # assign unique IDs
