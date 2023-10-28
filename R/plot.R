@@ -172,8 +172,8 @@ setMethod(
                               ...)
     render_image(
       mat = bin_mat,
-      x = seq(e$xmin, e$xmax, length.out = ncol(bin_mat)),
-      y = seq(e$ymin, e$ymax, length.out = nrow(bin_mat)),
+      x = seq(ext$xmin, ext$xmax, length.out = ncol(bin_mat)),
+      y = seq(ext$ymin, ext$ymax, length.out = nrow(bin_mat)),
       col = col
     )
   })
