@@ -34,6 +34,8 @@ desparse_to_grid_bin_data = function(data, px_x, px_y) {
 #' @return matrix of rasterized point information
 #' @keywords internal
 raster_bin_data = function(data,
+                           filter_col = NULL,
+                           filter_val = NULL,
                            extent,
                            resolution = 5e4,
                            count_info_column = NULL) {
@@ -43,6 +45,13 @@ raster_bin_data = function(data,
   checkmate::assert_class(data, 'dbPointsProxy')
   if (!is.null(count_info_column)) {
     checkmate::assert_character(count_info_column, len = 1L)
+  }
+  if (!is.null(filter_col)) checkmate::assert_character(filter_col, len = 1L)
+  if (!is.null(filter_val)) {
+    checkmate::assert_character(feats)
+    if (length(feats) > 1L) stopf(
+      "Plotting more than one feature at a time not yet supported"
+    )
   }
 
   # 1. decide binning plan #
@@ -61,7 +70,15 @@ raster_bin_data = function(data,
 
   # 2. perform data binning then collect values #
   # ------------------------------------------- #
-  bin_data <- data[] %>%
+  data <- data[] # drop to lazy table
+
+  # perform filtering if needed
+  if (!is.null(feats)) {
+    data <- data %>%
+      dplyr::filter(!!as.symbol(filter_col) == filter_val)
+  }
+
+  bin_data <- data %>%
     # select the requested spatial extent (hard selection on all sides)
     extent_filter(extent = extent, include = rep(TRUE, 4L)) %>%
     # create cols x_bin and y_bin to track what bin each record is in
@@ -126,21 +143,39 @@ render_image = function(mat,
 
 
 
+#' @rdname hidden_aliases
+#' @param feats feature to plot. Only one allowed at time right now.
+#' @param ext SpatExtent. Used to set the extent of the plot
+#' @param col vector of colors to use as color gradient
+#' @param resolution minimum number of bins to use when rasterizing
+#' @param \dots additional params to pass to rasterization process
+#' @export
 setMethod(
   'plot', signature(x = 'dbPointsProxy', y = 'missing'),
   function(x,
+           feats = NULL,
            col = c("#002222", "white", "#800020"),
            resolution = 5e6,
+           ext = NULL,
            ...)
   {
-    e = extent_calculate(x)
+    if (is.null(ext)) {
+      ext = extent_calculate(x)
+    }
 
     # rasterize (bin) the points information as a matrix
-    bin_mat = raster_bin_data(data = x, extent = e, resolution = resolution, ...)
+    bin_mat = raster_bin_data(data = x,
+                              filter_col = 'feat_ID',
+                              filter_val = feats,
+                              extent = ext,
+                              feats = feats,
+                              resolution = resolution,
+                              ...)
     render_image(
       mat = bin_mat,
       x = seq(e$xmin, e$xmax, length.out = ncol(bin_mat)),
-      y = seq(e$ymin, e$ymax, length.out = nrow(bin_mat))
+      y = seq(e$ymin, e$ymax, length.out = nrow(bin_mat)),
+      col = col
     )
   })
 
