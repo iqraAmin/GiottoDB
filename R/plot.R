@@ -48,8 +48,8 @@ raster_bin_data = function(data,
   }
   if (!is.null(filter_col)) checkmate::assert_character(filter_col, len = 1L)
   if (!is.null(filter_val)) {
-    checkmate::assert_character(feats)
-    if (length(feats) > 1L) stopf(
+    checkmate::assert_character(filter_val)
+    if (length(filter_val) > 1L) stopf(
       "Plotting more than one feature at a time not yet supported"
     )
   }
@@ -73,7 +73,7 @@ raster_bin_data = function(data,
   data <- data[] # drop to lazy table
 
   # perform filtering if needed
-  if (!is.null(feats)) {
+  if (!is.null(filter_val)) {
     data <- data %>%
       dplyr::filter(!!as.symbol(filter_col) == filter_val)
   }
