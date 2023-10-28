@@ -85,7 +85,8 @@ raster_bin_data = function(data,
   } else {
     rast_data <- bin_data %>%
       dplyr::group_by(x_bin, y_bin) %>%
-      dplyr::summarize(density = sum(!!count_info_column)) %>%
+      dplyr::summarize(density = sum(!!as.symbol(count_info_column),
+                                     na.rm = TRUE)) %>%
       dplyr::collect() %>%
       desparse_to_grid_bin_data(px_x = px_x, px_y = px_y)
   }
