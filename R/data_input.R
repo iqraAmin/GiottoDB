@@ -1109,9 +1109,7 @@ stream_writer_gef_tx = function(
 {
   checkmate::assert_class(p, 'Pool')
   checkmate::assert_character(remote_name, len = 1L)
-  if(!is.null(custom_table_fields)) {
-    checkmate::assert_character(custom_table_fields)
-  }
+  checkmate::assert_data_frame(x)
 
   last_uid <- sql_max(p, remote_name = remote_name, col = '.uID')
 
