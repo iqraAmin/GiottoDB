@@ -2,7 +2,7 @@
 % Please edit documentation in R/connection.R
 \name{tableBE}
 \alias{tableBE}
-\title{Create a table from database}
+\title{Open a table from database}
 \usage{
 tableBE(cPool, remote_name, ...)
 }
@@ -14,5 +14,5 @@ tableBE(cPool, remote_name, ...)
 \item{...}{additional params to pass to dplyr::tbl()}
 }
 \description{
-Create a table from database
+Open a table from database
 }
