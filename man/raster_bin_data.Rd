@@ -4,7 +4,7 @@
 \alias{raster_bin_data}
 \title{Bin database values in xy}
 \usage{
-raster_bin_data(data, extent, resolution = 50000)
+raster_bin_data(data, extent, resolution = 50000, count_info_column = NULL)
 }
 \arguments{
 \item{data}{tbl_Pool to use}

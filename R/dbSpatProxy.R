@@ -210,16 +210,27 @@ createDBPolygonProxy = function(SpatVector,
 
 
 
-createDBPointProxy = function(SpatVector,
-                              remote_name = 'pnt_test',
-                              db_path = ':temp:',
-                              xy_col = c('x', 'y'),
-                              extent = NULL,
-                              overwrite = FALSE,
-                              chunk_size = 10000L,
-                              callback = NULL,
-                              custom_table_fields = NULL,
-                              ...) {
+
+#' @name createDBPointsProxy
+#' @title Create a framework for chunked processing with terra points SpatVectors
+#' @description
+#' Create an S4 dbPointsProxy object
+#' @details Information is only read into the database during this process. Based
+#' on the \code{remote_name} and \code{db_path} a lazy connection is then made
+#' downstream during dbData intialization and appended to the object. If the data
+#' already exists within the database backend then it is entirely permissible to
+#' omit the \code{SpatVector} param.
+#' @export
+createDBPointsProxy = function(SpatVector,
+                               remote_name = 'pnt_test',
+                               db_path = ':temp:',
+                               xy_col = c('x', 'y'),
+                               extent = NULL,
+                               overwrite = FALSE,
+                               chunk_size = 10000L,
+                               callback = NULL,
+                               custom_table_fields = NULL,
+                               ...) {
   db_path = getDBPath(db_path)
   backend_ID = calculate_backend_id(db_path)
   p = getBackendPool(backend_ID)
