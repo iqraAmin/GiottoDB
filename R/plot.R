@@ -168,7 +168,6 @@ setMethod(
                               filter_col = 'feat_ID',
                               filter_val = feats,
                               extent = ext,
-                              feats = feats,
                               resolution = resolution,
                               ...)
     render_image(
