@@ -132,7 +132,6 @@ setMethod(
 # TODO polygon filtering and determine method of selection of records and recombining
 # query ####
 #' @rdname hidden_aliases
-#' @importMethodsFrom terra query
 #' @description
 #' Additional methods for \pkg{terra}'s \code{query()} generic specific to
 #' dbSpatVectorProxy objects.

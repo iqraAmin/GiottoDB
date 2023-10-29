@@ -680,7 +680,6 @@ setMethod('dbms', signature(x = 'character'), function(x, ...) {
 })
 
 #' @rdname dbms-generic
-#' @importClassesFrom pool Pool
 #' @export
 setMethod('dbms', signature(x = 'Pool'), function(x, ...) {
   conn = pool::poolCheckout(x)

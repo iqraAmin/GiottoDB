@@ -1,9 +1,4 @@
 
-#' @importFrom methods setAs
-#' @importFrom terra as.polygons
-#' @importFrom terra as.points
-NULL
-
 
 # Data Coercion
 

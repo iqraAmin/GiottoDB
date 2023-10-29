@@ -2,7 +2,6 @@
 
 # SpatExtent generics ####
 #' @rdname hidden_aliases
-#' @importMethodsFrom terra ext ext<-
 #' @export
 setMethod('ext', signature(x = 'dbSpatProxyData'), function(x, ...) {
   x@extent

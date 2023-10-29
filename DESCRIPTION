@@ -48,6 +48,7 @@ Suggests:
     knitr,
     rmarkdown
 Collate: 
+    'package_imports.R'
     'classes.R'
     'Math.R'
     'assert.R'

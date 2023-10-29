@@ -1,9 +1,6 @@
 
-
-#' @importClassesFrom terra SpatExtent
-#' @importFrom methods as callNextMethod initialize new slot slot<- validObject
-#' @importFrom utils capture.output
-#' @keywords internal
+# collate
+#' @include package_imports.R
 NULL
 
 
@@ -508,7 +505,6 @@ print_dbPolygonProxy = function(x, n, ...) {
 #' @slot feat_ID feature IDs
 #' @slot extent extent of points
 #' @slot poly_filter polygon SpatVector that is used to filter values on read-in
-#' @importClassesFrom terra SpatExtent
 #' @export
 dbPointsProxy = setClass(
   'dbPointsProxy',

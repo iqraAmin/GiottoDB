@@ -310,7 +310,6 @@ createDBPointsProxy = function(SpatVector,
 
 # values ####
 #' @rdname hidden_aliases
-#' @importMethodsFrom terra values
 #' @description
 #' Get cell attributes from a dbSpatProxyData
 #' Values are only returned as a \code{dbDataFrame} from dbSpatProxyData
@@ -524,7 +523,6 @@ setMethod('extent_filter',
 #' @name hidden_aliases
 #' @param x object to crop
 #' @param y object to crop with
-#' @importMethodsFrom terra crop
 #' @return dbSpatProxyData
 #' @export
 setMethod('crop', signature(x = 'dbSpatProxyData', y = 'SpatExtent'),
