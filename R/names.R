@@ -37,6 +37,21 @@ dplyr_set_colnames_dbpointproxy = function(x, value) {
   x
 }
 
+dplyr_set_colnames_dbpolyproxy = function(x, value) {
+  stopifnot('Replacement names are not the same length as the number of columns' =
+              length(value) == ncol(x@attributes@data) - 1L) # account for intervening geom col
+
+  c_names = colnames(x@attributes@data)
+  c_names = c_names[-which(c_names == 'geom')]
+  for(n_i in seq_along(c_names)) {
+    cn = c_names[n_i]
+    vn = as.name(value[n_i])
+    x@attributes@data = x@attributes@data %>% dplyr::rename(!!vn := cn)
+  }
+  x@attributes@data = x@attributes@data %>% dplyr::collapse()
+  x
+}
+
 
 
 
@@ -56,22 +71,24 @@ setMethod('names<-', signature(x = 'dbDataFrame', value = 'gdbIndex'), function(
   dplyr_set_colnames(x, value = as.character(value))
 })
 
+# dbpolygonproxy has the geom column that acts as its index that is not displayed
+# and also should never be removed.
 #' @rdname hidden_aliases
 #' @export
 setMethod('names', signature(x = 'dbPolygonProxy'), function(x) {
   x = reconnect(x)
-  names(x@attributes)
+  full_names = (names(x@attributes))
+  full_names[-which(full_names == 'geom')]
 })
 #' @rdname hidden_aliases
 #' @export
 setMethod('names<-', signature(x = 'dbPolygonProxy', value = 'gdbIndex'), function(x, value) {
   x = reconnect(x)
-  names(x@attributes) = value
-  x
+  dplyr_set_colnames_dbpolyproxy(x, value = as.character(value))
 })
 
-# Unlike the other classes, dbPointsProxy has to pretend that its attributes table
-# is fully separate
+# dbpointsproxy has .uID, x, and y cols that are not displayed and also should
+# never be removed
 #' @rdname hidden_aliases
 #' @export
 setMethod('names', signature(x = 'dbPointsProxy'), function(x) {

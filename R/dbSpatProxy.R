@@ -211,15 +211,26 @@ createDBPolygonProxy = function(SpatVector,
 
 
 
+
+
+#' @title Create dbPointsProxy object
 #' @name createDBPointsProxy
-#' @title Create a framework for chunked processing with terra points SpatVectors
-#' @description
-#' Create an S4 dbPointsProxy object
-#' @details Information is only read into the database during this process. Based
-#' on the \code{remote_name} and \code{db_path} a lazy connection is then made
-#' downstream during dbData intialization and appended to the object. If the data
-#' already exists within the database backend then it is entirely permissible to
-#' omit the \code{SpatVector} param.
+#' @param SpatVector object coercible to SpatVector or filepath to spatial data
+#' readable by \code{\link[terra]{vect}}
+#' @param remote_name name of remote table on database backend
+#' @param db_path filepath to the database backend
+#' @param xy_col columns in data to read in that contain the x and y vertex info
+#' @param extent terra SpatExtent (optional) that can be used to subset the data
+#' to read in before it is saved to database
+#' @param overwrite whether to overwrite if \code{remote_name} already exists on
+#' the database
+#' @param chunk_size the number of polygons to read in per chunk read
+#' @param callback data formatting and manipulations to perform chunkwise before the data
+#' is saved to database. Instructions should be provided as a function that takes
+#' an input of a data.table and returns a data.table
+#' @param custom_table_fields (optional) custom table field SQL settings to use
+#' during table creation for the spatial geometry table
+#' @param \dots addtional params to pass
 #' @export
 createDBPointsProxy = function(SpatVector,
                                remote_name = 'pnt_test',
@@ -643,6 +654,8 @@ setMethod('dbspat_to_sv', signature(x = 'dbPointsProxy'), function(x, ...) {
 # helper functions ####
 
 
+# TODO largely replaced by dbvect
+
 #' @name svpoint_to_dt
 #' @title SpatVector point to data.table
 #' @param spatvector spatvector to use
@@ -658,7 +671,7 @@ svpoint_to_dt = function (spatvector, include_values = TRUE)
   else {
     DT_values = terra::crds(spatvector) %>% data.table::as.data.table()
   }
-  DT_values[, .uID := 1:.N]
+  DT_values[, .uID := seq(.N)]
   return(DT_values)
 }
 

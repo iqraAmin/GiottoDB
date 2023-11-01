@@ -659,7 +659,7 @@ append_permanent_dbpoly = function(p,
 
 
 
-
+# TODO mostly replaced by dbvect
 # Append information from a terra SpatVector points to the db
 append_permanent_dbpoints = function(p,
                                      SpatVector,

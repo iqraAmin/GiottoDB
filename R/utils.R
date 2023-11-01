@@ -1,38 +1,6 @@
 
 # Print Formatting ####
 
-#' @title Wrap message
-#' @name wrap_msg
-#' @param ... additional strings and/or elements to pass to wrap_txt
-#' @param sep how to join elements of string (default is one space)
-#' @keywords internal
-#' @noRd
-wrap_msg = function(..., sep = ' ') {
-  message(wrap_txt(..., sep = sep))
-}
-
-#' @title Wrap text
-#' @name wrap_txt
-#' @param ... additional params to pass
-#' @param sep how to join elements of string (default is one space)
-#' @param strWidth externally set wrapping width. (default value of 100 is not effected)
-#' @param errWidth default = FALSE. Set strWidth to be compatible with error printout
-#' @keywords internal
-#' @noRd
-wrap_txt = function(..., sep = ' ', strWidth = 100, errWidth = FALSE) {
-  custom_width = ifelse(is.null(match.call()$strWidth), yes = FALSE, no = TRUE)
-  if(!isTRUE(custom_width)) {
-    if(isTRUE(errWidth)) strWidth = getOption('width') - 6
-  }
-
-  cat(..., sep = sep) %>%
-    capture.output() %>%
-    strwrap(., prefix =  ' ', initial = '', # indent later lines, no indent first line
-            width = min(80, getOption("width"), strWidth)) %>%
-    paste(., collapse = '\n')
-}
-
-
 
 # Custom stop function
 stopf = function(...) {
@@ -179,7 +147,7 @@ getDBPath = function(path = ':temp:', extension = '.duckdb') {
 #' @export
 backendSize = function(backend_ID) {
   dbdir = getBackendPath(backend_ID)
-  fs::file_size(dbdir)
+  file.size(dbdir)
 }
 
 
@@ -273,81 +241,6 @@ calculate_hash = function(object) {
 
 
 
-
-
-# DB settings ####
-
-#' @name dbSettings
-#' @title Get and set database settings
-#' @param x backend_ID or pool object
-#' @param setting character. Setting to get or set
-#' @param value if missing, will retrieve the setting. If provided, will attempt
-#' to set the new value. If 'RESET' will reset the value to default
-#' @param ... additional params to pass
-#' @export
-setMethod('dbSettings', signature(x = 'ANY', setting = 'character', value = 'missing'),
-          function(x, setting, value, ...) {
-            stopifnot(length(setting) == 1L)
-
-            p = evaluate_conn(conn = x, mode = 'pool')
-            DBI::dbGetQuery(p, 'SELECT current_setting(?);', params = list(setting))
-          })
-#' @rdname dbSettings
-#' @export
-setMethod('dbSettings', signature(x = 'ANY', setting = 'character', value = 'ANY'),
-          function(x, setting, value, ...) {
-            stopifnot(length(setting) == 1L)
-
-            p = evaluate_conn(conn = x, mode = 'pool')
-            quoted_setting = DBI::dbQuoteIdentifier(p, setting)
-            if(value == 'RESET') {
-              DBI::dbExecute(p, paste0('RESET ', quoted_setting, ';'))
-              return(invisible())
-            }
-            quoted_value = DBI::dbQuoteLiteral(p, value)
-            DBI::dbExecute(p, paste0('SET ', quoted_setting, ' = ', quoted_value))
-            invisible() # avoid printout of affected rows from dbExecute
-          })
-
-
-
-#' @name dbMemoryLimit
-#' @title Get and set DB memory limits
-#' @param x backend_ID or pool object
-#' @param limit character. Memory limit to use with units included (for example
-#' '10GB'). If missing, will get the current setting. If 'RESET' will reset to
-#' default
-#' @param ... additional params to pass
-#' @export
-dbMemoryLimit = function(x, limit, ...) {
-  if(missing(limit)) {
-    return(dbSettings(x = x, setting = 'memory_limit'))
-  } else if(limit != 'RESET') {
-    stopifnot(is.character(limit))
-    stopifnot(length(limit) == 1L)
-  }
-  return(dbSettings(x = x, setting = 'memory_limit', value = limit))
-}
-
-
-
-
-#' @name dbThreads
-#' @title Set and get number of threads to use in database backend
-#' @param x backend ID or pool object of backend
-#' @param threads numeric or integer. Number of threads to use.
-#' If missing, will get the current setting. If 'RESET' will reset to default.
-#' @param ... additional params to pass
-#' @export
-dbThreads = function(x, threads, ...) {
-  if(missing(threads)) {
-    return(dbSettings(x = x, setting = 'threads'))
-  } else if(threads != 'RESET') {
-    stopifnot(length(threads) == 1L)
-    threads = as.integer(threads)
-  }
-  return(dbSettings(x = x, setting = 'threads', value = threads))
-}
 
 
 

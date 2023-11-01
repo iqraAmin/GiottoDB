@@ -373,34 +373,73 @@ getBackendPath = function(backend_ID) {
 # connection is given as input, it will also be returned. This default can also
 # be overridden using the mode = 'pool' or mode = 'conn' param for hash or pool
 # inputs
-setMethod('evaluate_conn', signature(conn = 'character'),
-          function(conn, mode = 'pool', ...)
-{
-  mode = match.arg(mode, choices = c('pool', 'conn', 'path'))
-  switch(
-    mode,
-    'pool' = getBackendPool(conn),
-    'conn' = getBackendConn(conn),
-    'path' = {
-      getBackendPool(conn) %>%
-        pool::localCheckout() %>%
-        conn_to_path()
-    }
+
+# character.
+setMethod(
+  'evaluate_conn', signature(conn = 'character'),
+  function(conn, mode = 'pool', ...
   )
-})
+  {
+    # if pattern matched, assume hash input
+    if (nchar(conn) == 19 && grepl('^ID_', conn)) {
+      mode = match.arg(mode, choices = c('pool', 'conn', 'path', 'id'))
+      out = switch(
+        mode,
+        'pool' = getBackendPool(conn),
+        'conn' = getBackendConn(conn),
+        'path' = {
+          getBackendPool(conn) %>%
+            pool::localCheckout() %>%
+            conn_to_path()
+        },
+        'id' = conn
+      )
+
+      return(out)
+    } else { # otherwise, assume db_path input or token
+      # ensure that it is a giotto backend and that it is a file rather
+      # than a directory.
+
+      check_backend_path <- function(x) {
+        grepl('giotto_backend', basename(conn)) &&
+          checkmate::test_file_exists(conn)
+      }
+
+      # if conn is token
+      if (conn == ":temp:") conn <- tempdir()
+
+      # if conn is not the backend path, see if it is the directory that
+      # contains a backend db file then check again
+      if (!check_backend_path(conn)) {
+        conn <- list.files(conn, pattern = 'giotto_backend.', full.names = TRUE)[1L]
+        conn <- normalizePath(conn)
+        if (!check_backend_path(conn)) stopf('evaluate_conn: db path not found')
+      }
+
+      hash = calculate_backend_id(conn)
+      evaluate_conn(hash, mode = mode)
+    }
+  })
+
 setMethod('evaluate_conn', signature(conn = 'Pool'),
           function(conn, mode = 'pool', ...)
 {
-  mode = match.arg(mode, choices = c('pool', 'conn', 'path'))
+  mode = match.arg(mode, choices = c('pool', 'conn', 'path', 'id'))
   switch(
     mode,
     'pool' = conn,
     'conn' = pool::poolCheckout(conn),
-    'path' = pool_to_path(conn)
+    'path' = conn_to_path(conn),
+    'id' = {
+      calculate_backend_id(
+        evaluate_conn(conn, mode = 'path')
+      )
+    }
   )
 })
+
 setMethod('evaluate_conn', signature(conn = 'DBIConnection'),
-          function(conn, mode = c('conn', 'path'), ...)
+          function(conn, mode = c('pool', 'conn', 'path', 'id'), ...)
 {
   switch(
     mode,
@@ -421,20 +460,30 @@ setMethod('evaluate_conn', signature(conn = 'DBIConnection'),
         stopf(class(conn), "is not a supported connection type.")
       }
     },
-    'path' = conn_to_path(conn)
+    'path' = conn_to_path(conn),
+    'id' = {
+      evaluate_conn(conn, mode = 'path') %>%
+        calculate_backend_id()
+    }
   )
 })
 
 
 
 
-pool_to_path <- function(x) {
-  conn = pool::localCheckout(x)
-  conn_to_path(conn)
+conn_to_path <- function(x) {
+  if (inherits(x, 'Pool')) {
+    x <- pool::localCheckout(x)
+  }
+  x@driver@dbdir
 }
 
-conn_to_path <- function(x) {
-  x@driver@dbdir
+
+
+conn_to_id <- function(x) {
+  calculate_backend_id(
+    conn_to_path(x)
+  )
 }
 
 

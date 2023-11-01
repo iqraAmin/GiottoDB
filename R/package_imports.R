@@ -8,8 +8,9 @@
 #' @importMethodsFrom terra ext ext<-
 #' @importFrom methods as callNextMethod initialize new slot slot<- validObject setAs
 #' @importFrom utils capture.output
+#' @importFrom pool Pool
+#' @import GiottoUtils
 #' @importFrom magrittr %>%
 #' @importFrom data.table ":="
-#' @importFrom pool Pool
 NULL
 

@@ -62,6 +62,8 @@ Collate:
     'dbDataFrame.R'
     'dbMatrix.R'
     'dbSpatProxy.R'
+    'db_settings.R'
+    'dbvect.R'
     'dd.R'
     'fields_preset.R'
     'logging.R'

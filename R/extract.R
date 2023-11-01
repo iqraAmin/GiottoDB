@@ -131,8 +131,8 @@ setMethod('[', signature(x = 'dbDataFrame', i = 'gdbIndex', j = 'gdbIndex', drop
 ### Extract [] ####
 #' @rdname hidden_aliases
 #' @export
-setMethod('[', signature(x = 'dbDataFrame', i = 'missing', j = 'missing', drop = 'missing'),
-          function(x, i, j) {
+setMethod('[', signature(x = 'dbDataFrame', i = 'missing', j = 'missing', drop = 'ANY'),
+          function(x, i, j, drop = FALSE) {
             x@data
           })
 ### Set [] ####
@@ -211,6 +211,35 @@ setMethod(
     x
   }
 )
+#' @rdname hidden_aliases
+#' @export
+setMethod(
+  '[', signature(x = 'dbPolygonProxy', i = 'numeric', j = 'missing', drop = 'ANY'),
+  function(x, i, ..., drop = FALSE) {
+    x <- reconnect(x)
+    x@data <- x@data %>%
+      dplyr::filter(geom %in% i)
+    x@attributes[] <- x@attributes[] %>%
+      dplyr::filter(geom %in% i)
+    x
+  }
+)
+#' @rdname hidden_aliases
+#' @export
+setMethod(
+  '[', signature(x = 'dbPolygonProxy', i = 'logical', j = 'missing', drop = 'ANY'),
+  function(x, i, ..., drop = FALSE) {
+    x <- reconnect(x)
+    geomIDs <- x@attributes[] %>%
+      dplyr::pull(geom)
+    bool_vect <- geomIDs[i]
+    x@data <- x@data %>%
+      dplyr::filter(geom %in% bool_vect)
+    x@attributes[] <- x@attributes[] %>%
+      dplyr::filter(geom %in% bool_vect)
+    x
+  }
+)
 ## cols only ####
 # character input subsets the attribute table
 #' @rdname hidden_aliases
@@ -220,7 +249,31 @@ setMethod(
   function(x, j, ..., drop = FALSE) {
     x = reconnect(x)
     x@attributes@data = x@attributes@data %>%
-      dplyr::select(i)
+      dplyr::select(c(geom, dplyr::all_of(j)))
+    x
+  }
+)
+#' @rdname hidden_aliases
+#' @export
+setMethod(
+  '[', signature(x = 'dbPolygonProxy', i = 'missing', j = 'numeric', drop = 'ANY'),
+  function(x, j, ..., drop = FALSE) {
+    x = reconnect(x)
+    sel_cols = names(x)[j]
+    x@attributes@data = x@attributes@data %>%
+      dplyr::select(c(geom, dplyr::all_of(sel_cols)))
+    x
+  }
+)
+#' @rdname hidden_aliases
+#' @export
+setMethod(
+  '[', signature(x = 'dbPolygonProxy', i = 'missing', j = 'character', drop = 'ANY'),
+  function(x, j, ..., drop = FALSE) {
+    x = reconnect(x)
+    sel_cols = names(x)[j]
+    x@attributes@data = x@attributes@data %>%
+      dplyr::select(c(geom, dplyr::all_of(sel_cols)))
     x
   }
 )
@@ -231,7 +284,7 @@ setMethod(
   function(x, j, ..., drop = FALSE) {
     x = reconnect(x)
     x@data = x@data %>%
-      dplyr::select(c(.uID, x, y, j))
+      dplyr::select(c(.uID, x, y, dplyr::all_of(j)))
     x
   }
 )
@@ -244,7 +297,7 @@ setMethod(
     x = reconnect(x)
     sel_cols = names(x)[j]
     x@data = x@data %>%
-      dplyr::select(.uID, x, y, sel_cols)
+      dplyr::select(.uID, x, y, dplyr::all_of(sel_cols))
     x
   }
 )
@@ -256,7 +309,7 @@ setMethod(
     x = reconnect(x)
     sel_cols = names(x)[j]
     x@data = x@data %>%
-      dplyr::select(.uID, x, y, sel_cols)
+      dplyr::select(.uID, x, y, dplyr::all_of(sel_cols))
     x
   }
 )
@@ -267,7 +320,7 @@ setMethod(
 #' @rdname hidden_aliases
 #' @export
 setMethod(
-  '[', signature(x = 'dbPointsProxy', i = 'gdbIndexNonChar', j = 'gdbIndex', drop = 'ANY'),
+  '[', signature(x = 'dbSpatProxyData', i = 'gdbIndexNonChar', j = 'gdbIndex', drop = 'ANY'),
   function(x, i, j, ..., drop = FALSE) {
     x = reconnect(x)
     x = x[, j, ..., drop]
@@ -275,7 +328,6 @@ setMethod(
     x
   }
 )
-
 
 
 
