@@ -141,30 +141,38 @@ setMethod(
     #
     # `write_fun` controlled:
     # ... params
-    # updating of .uID or geom cols happens inside dbvect depending on status
-    # of existing tables and ovewrite param value
+    # updating of .uID or geom cols happens inside dbvect depending on whether
+    # table named by remote_name already exists and overwrite param value
+
+    # declare writer function #
+    # # --------------------- #
+    # p, remote_name, x and ... params are the required params for all writer
+    # functions used with stream_to_db
+    dbvect_writer = function(p, remote_name, x, ...) {
+      # dbvect output objects are discarded during this process
+      dbvect(
+        x = x,
+        db = p,
+        remote_name = remote_name,
+        ...,
+        type = type, #                       pull from this stack frame
+        geom = geom, #                       pull from this stack frame
+        read_fun = read_fun, #               pull from this stack frame
+        n = n, #                             pull from this stack frame
+        stop_cond = stop_cond, #             pull from this stack frame
+        callback = callback, #               pull from this stack frame
+        verbose = verbose, #                 pull from this stack frame
+        log_to = log_to, #                   pull from this stack frame
+        report_n_chunks = report_n_chunks #  pull from this stack frame
+      )
+      return(NULL)
+    }
+
     stream_to_db(
       p = p,
       remote_name = remote_name,
       x = x,
-      write_fun = function(p, remote_name, x, ...) {
-        # dbvect output objects are discarded during this process
-        dbvect(
-          x = x,
-          db = p,
-          remote_name = remote_name,
-          type = type, #                       pull from this stack frame
-          geom = geom, #                       pull from this stack frame
-          read_fun = read_fun, #               pull from this stack frame
-          n = n, #                             pull from this stack frame
-          stop_cond = stop_cond, #             pull from this stack frame
-          callback = callback, #               pull from this stack frame
-          verbose = verbose, #                 pull from this stack frame
-          log_to = log_to, #                   pull from this stack frame
-          report_n_chunks = report_n_chunks, # pull from this stack frame
-          ...
-        )
-      },
+      write_fun = dbvect_writer,
       ...
     )
 
