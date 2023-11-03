@@ -142,12 +142,34 @@ setMethod(
     # `write_fun` controlled:
     # ... params
     # updating of .uID or geom cols happens inside dbvect depending on whether
-    # table named by remote_name already exists and overwrite param value
+    # table named by 'remote_name' already exists and overwrite param value
 
     # declare writer function #
     # # --------------------- #
     # p, remote_name, x and ... params are the required params for all writer
     # functions used with stream_to_db
+    #
+    # dbvect is used as the core of the writer because it handles the 'geom'
+    # param. Usage of a simpler function with less dispatch overhead may speed
+    # things up.
+    #
+    # A single head to head comparison on stereoseq MOSTA E16.5_E2S6.bgef
+    # suggests that there is not too much slowdown.
+    #
+    #   `dbvect` - no obj creation per chunk:
+    #     [Finished]
+    #     29 chunks written
+    #     Start  : 2023-11-03 09:04:35
+    #     End    : 2023-11-03 09:07:14
+    #     Elapsed: 00:02:38 elapsed (00:02:14 cpu)
+    #
+    #   default `stream_to_db` - simple writer for points info
+    #     [Finished]
+    #     29 chunks written
+    #     Start  : 2023-11-03 08:56:57
+    #     End    : 2023-11-03 08:59:30
+    #     Elapsed: 00:02:32 elapsed (00:02:12 cpu)
+
     dbvect_writer = function(p, remote_name, x, ...) {
       dbvect(
         x = x,

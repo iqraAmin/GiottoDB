@@ -899,7 +899,8 @@ setMethod(
       )
       if (isTRUE(verbose) &&
           rounds %% report_n_chunks == 0L) {
-        cat("chunk:", rounds, "\n")
+        cat("\rchunk:", rounds, ' ') # add space for different console outputs
+        flush.console()
       }
     }
 
