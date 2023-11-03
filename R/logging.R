@@ -40,9 +40,9 @@ log_to_dbdir <- function(p) {
 #' 'gdb.last_logconn'
 #' @keywords internal
 log_create = function(filedir = tempdir()) {
-  filepath = paste0(filedir, '/log.txt') %>%
-    normalizePath()
+  filepath = paste0(filedir, '/log.txt')
   if (!file.exists(filepath)) file.create(filepath)
+  filepath = normalizePath(filepath)
   fileConn = file(filepath, open = 'a+') # open in 'a'ppend and reading (+) mode
 
   options('gdb.last_logpath' = filepath)
