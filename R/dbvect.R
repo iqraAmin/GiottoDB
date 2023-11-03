@@ -149,16 +149,15 @@ setMethod(
     # p, remote_name, x and ... params are the required params for all writer
     # functions used with stream_to_db
     dbvect_writer = function(p, remote_name, x, ...) {
-      # dbvect output objects are discarded during this process
       dbvect(
         x = x,
         db = p,
         remote_name = remote_name,
-        type = type, #                       pull from this stack frame
-        geom = geom, #                       pull from this stack frame
+        type = type, #                      pull from this stack frame
+        geom = geom, #                      pull from this stack frame
+        return_object = FALSE, # RETURN NULL. Final obj created at end
         ...
       )
-      return(NULL)
     }
 
     stream_to_db(
@@ -172,7 +171,7 @@ setMethod(
       callback = callback, #               pull from this stack frame
       verbose = verbose, #                 pull from this stack frame
       log_to = log_to, #                   pull from this stack frame
-      report_n_chunks = report_n_chunks, #  pull from this stack frame
+      report_n_chunks = report_n_chunks, # pull from this stack frame
       ...
     )
 
@@ -222,6 +221,7 @@ dbvect_poly_df <- function(
     atts = NULL,
     geom = NULL, # expected WKT col
     overwrite = FALSE,
+    return_object = TRUE,
     ...
 ) {
   p <- evaluate_conn(db, mode = 'pool')
@@ -309,19 +309,24 @@ dbvect_poly_df <- function(
     ...
   )
 
-  # create and return dbpoly object
-  # INIT: when following values are NULL:
-  # [data] table attached during init
-  # [attributes] table attached during init
-  # [extent] values are calculated during init
-  new(
-    'dbPolygonProxy',
-    data = NULL,
-    attributes = NULL,
-    hash = evaluate_conn(p, mode = 'id'),
-    remote_name = remote_name,
-    n_poly = sql_max(p, attr_name, 'geom')
-  )
+  res <- NULL
+  if (isTRUE(return_object)) {
+    # create and return dbpoly object
+    # INIT: when following values are NULL:
+    # [data] table attached during init
+    # [attributes] table attached during init
+    # [extent] values are calculated during init
+    res <- new(
+      'dbPolygonProxy',
+      data = NULL,
+      attributes = NULL,
+      hash = evaluate_conn(p, mode = 'id'),
+      remote_name = remote_name,
+      n_poly = sql_max(p, attr_name, 'geom')
+    )
+  }
+
+  return(res)
 }
 
 
@@ -331,6 +336,7 @@ dbvect_poly_sv <- function(
     remote_name = 'poly_test',
     overwrite = FALSE,
     include_values = TRUE,
+    return_object = TRUE,
     ...
 )
 {
@@ -360,6 +366,7 @@ dbvect_poly_sv <- function(
     geom = NULL, # require geom 5 col workflow
     atts = atts_dt,
     overwrite = overwrite,
+    return_object = return_object,
     ...
   )
 }
@@ -372,6 +379,7 @@ dbvect_points_df = function(
     remote_name = 'pnt_test',
     geom = c('x', 'y'),
     overwrite = FALSE,
+    return_object = TRUE,
     ...
 )
 {
@@ -423,13 +431,18 @@ dbvect_points_df = function(
   # open the written table
   geom_table <- tableBE(cPool = p, remote_name = remote_name)
 
-  # create and return dbpoints object
-  new(
-    'dbPointsProxy',
-    data = geom_table,
-    hash = evaluate_conn(p, mode = 'id'),
-    remote_name = remote_name
-  )
+  res <- NULL
+  if (isTRUE(return_object)) {
+    # create and return dbpoints object
+    res <- new(
+      'dbPointsProxy',
+      data = geom_table,
+      hash = evaluate_conn(p, mode = 'id'),
+      remote_name = remote_name
+    )
+  }
+
+  return(res)
 }
 
 
@@ -441,6 +454,7 @@ dbvect_points_sv <- function(
     remote_name = 'pnt_test',
     overwrite = FALSE,
     include_values = TRUE,
+    return_object = TRUE,
     ...
 )
 {
@@ -457,5 +471,6 @@ dbvect_points_sv <- function(
                    geom = c('x', 'y'),
                    remote_name = remote_name,
                    overwrite = overwrite,
+                   return_object = return_object,
                    ...)
 }
