@@ -917,8 +917,8 @@ setMethod(
 
     log_write(
       file_conn = file_conn,
-      x = c(
-        '[Finished]\n',
+      main = 'FINISHED',
+      x = paste(
         rounds, 'chunks written\n',
         'Elapsed:', data.table::timetaken(started_at)
       )
