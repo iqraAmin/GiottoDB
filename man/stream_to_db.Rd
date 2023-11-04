@@ -52,7 +52,7 @@ assigned data types along with any other in-line constraints}
 \item{overwrite}{whether to overwrite if table already exists (default = FALSE)}
 
 \item{read_fun}{function. Controls how information should be read. Should
-expose formal arguments 'x', 'n', and 'callback'}
+expose formal arguments 'x', 'n', and 'i'}
 
 \item{n}{number of units (usually rows) to read per chunk}
 

@@ -2,12 +2,9 @@
 % Please edit documentation in R/operations.R
 \name{castNumeric}
 \alias{castNumeric}
-\alias{castNumeric,dbMatrix,missing-method}
 \title{Set a column to numeric}
 \usage{
 \S4method{castNumeric}{dbData,character}(x, col, ...)
-
-\S4method{castNumeric}{dbMatrix,missing}(x, col, ...)
 }
 \arguments{
 \item{x}{GiottoDB data object}

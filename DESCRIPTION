@@ -48,10 +48,9 @@ Suggests:
     knitr,
     rmarkdown
 Collate: 
+    'assert.R'
     'package_imports.R'
     'classes.R'
-    'Math.R'
-    'assert.R'
     'generics.R'
     'backend.R'
     'coerce.R'
@@ -60,7 +59,6 @@ Collate:
     'connection.R'
     'data_input.R'
     'dbDataFrame.R'
-    'dbMatrix.R'
     'dbSpatProxy.R'
     'db_settings.R'
     'dbvect.R'

@@ -779,7 +779,7 @@ setMethod(
 # if x is [character], assume that it is a filepath to read from.
 #' @rdname stream_to_db
 #' @param read_fun function. Controls how information should be read. Should
-#' expose formal arguments 'x', 'n', and 'callback'
+#' expose formal arguments 'x', 'n', and 'i'
 #' @param n number of units (usually rows) to read per chunk
 #' @param stop_cond function. Function to run on each chunk. Will stop the
 #' chunk read looping when evaluates to TRUE.

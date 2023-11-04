@@ -4,9 +4,6 @@
 \alias{nrow}
 \alias{ncol}
 \title{The number of rows/cols}
-\usage{
-\S4method{nrow}{dbMatrix}(x)
-}
 \description{
 \code{nrow} and \code{ncol} return the number of rows or columns present in
 \code{x}.

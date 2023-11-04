@@ -5,7 +5,7 @@
 \alias{fields_preset}
 \title{Table fields presets}
 \format{
-An object of class \code{list} of length 2.
+An object of class \code{list} of length 1.
 }
 \usage{
 fields_preset

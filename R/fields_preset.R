@@ -138,9 +138,6 @@ createTableBE = function(conn,
 #' their constraints
 #' @export
 fields_preset = list(
-  dbMatrix_ijx = c(i = 'VARCHAR(100) NOT NULL',
-                   j = 'VARCHAR(100) NOT NULL',
-                   x = 'DOUBLE'),
   dbPoly_geom = c(geom = 'UINTEGER NOT NULL',
                   part = 'UINTEGER NOT NULL',
                   x = 'DOUBLE NOT NULL',

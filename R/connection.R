@@ -374,10 +374,37 @@ getBackendPath = function(backend_ID) {
 # be overridden using the mode = 'pool' or mode = 'conn' param for hash or pool
 # inputs
 
+
+#' @name evaluate_conn
+#' @title Convert between DB handles and identifiers
+#' @description GiottoDB refers to the database in several ways in different
+#' situations.
+#' \itemize{
+#'   \item **path** (filepath) usually used whenever user input is part of the
+#' workflow since that is the easiest for the user to have access to.
+#'   \item **id** (backend hash ID) a shortened and unique way for functions to
+#' reference a specific database backend.
+#'   \item **pool** (pool of connection objects) a pool object that can be used
+#'   to generate a database connected tbl.
+#'   \item **conn** (DBI connection) a DBIConnection object that can be used
+#'   to generate a database connected tbl. Used in situations where pool objects
+#'   are not possible to be used, such as with temporary table generation.
+#' }
+#' Conversions between any of the four types are possible except for conn to
+#' pool. These conversions can be performed using evaluate_conn.
+#' @param conn object to convert from
+#' @param mode desired output type. One of pool, conn, path, or id
+#' @param ... additional params to pass
+NULL
+
+
+
 # character.
+#' @rdname evaluate_conn
+#' @export
 setMethod(
   'evaluate_conn', signature(conn = 'character'),
-  function(conn, mode = 'pool', ...
+  function(conn, mode = c('pool', 'conn', 'path', 'id'), ...
   )
   {
     # if pattern matched, assume hash input
@@ -421,8 +448,10 @@ setMethod(
     }
   })
 
+#' @rdname evaluate_conn
+#' @export
 setMethod('evaluate_conn', signature(conn = 'Pool'),
-          function(conn, mode = 'pool', ...)
+          function(conn, mode = c('pool', 'conn', 'path', 'id'), ...)
 {
   mode = match.arg(mode, choices = c('pool', 'conn', 'path', 'id'))
   switch(
@@ -438,6 +467,10 @@ setMethod('evaluate_conn', signature(conn = 'Pool'),
   )
 })
 
+# pool not supported for this conversion, but pool is kept as default so that
+# people are aware that the default conversion is not possible.
+#' @rdname evaluate_conn
+#' @export
 setMethod('evaluate_conn', signature(conn = 'DBIConnection'),
           function(conn, mode = c('pool', 'conn', 'path', 'id'), ...)
 {

@@ -1,4 +1,7 @@
 
+# Collate #
+#' @include package_imports.R
+#' @include classes.R
 
 # dbData object interactions ####
 setGeneric('cPool', function(x, ...) standardGeneric('cPool'))
@@ -37,9 +40,6 @@ setGeneric('evaluate_conn', function(conn, ...) standardGeneric('evaluate_conn')
 setGeneric('dbSettings', function(x, setting, value, ...) standardGeneric('dbSettings'))
 # setGeneric('setRemoteKey', function(x, remote_name, primary_key, ...) standardGeneric('setRemoteKey'))
 
-# dbMatrix specific ####
-setGeneric('colSds', function(x, ...) standardGeneric('colSds'))
-setGeneric('rowSds', function(x, ...) standardGeneric('rowSds'))
 
 # extract ####
 setGeneric('keyCol', function(x, ...) standardGeneric('keyCol'))
