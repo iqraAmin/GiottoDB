@@ -5,7 +5,7 @@ Class diagram
 
 ``` mermaid
 classDiagram
-class Duckling {[VIRTUAL]}
+class GiottoDB {[VIRTUAL]}
 class backendInfo {
   +driver_call: character
   +db_path: character
@@ -19,16 +19,6 @@ class dbData {
   +remote_name: character
   +init: logical
   -reconnect()
-}
-class dbMatrix {
-  +dim_names: list
-  +dims: integer
-  -Arith()
-  -Ops()
-  -Math()
-  -col*()
-  -row*()
-  -t()
 }
 class dbDataFrame {
   +key
@@ -46,10 +36,9 @@ class dbPointsProxy {
   +n_point: integer
 }
 
-Duckling --> dbData
-Duckling --> backendInfo
+GiottoDB --> dbData
+GiottoDB --> backendInfo
 dbData --> dbDataFrame
-dbData --> dbMatrix
 dbData --> dbSpatProxyData
 dbSpatProxyData --> dbPolygonProxy
 dbSpatProxyData --> dbPointsProxy
