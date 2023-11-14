@@ -396,7 +396,7 @@ simplify_poly_as_point = function(
     ...)
 {
   checkmate::assert_class(x, 'tbl_Pool')
-  checkmate::assert_subset(c('x', 'y'), names(x))
+  checkmate::assert_subset(c('x', 'y'), colnames(x))
   method = match.arg(method, choices = c('mean', 'lowL', 'lowR', 'upL', 'upR'))
 
   y = switch(
