@@ -9,9 +9,6 @@
   # initialize the environment within the package namespace
   assign(".DB_ENV", new.env(), envir = asNamespace(pkgname))
 
-  # setup result ID counter
-  options(gdb.res_count = 1L)
-
   reg.finalizer(
     e = .DB_ENV,
     f = closeBackend,

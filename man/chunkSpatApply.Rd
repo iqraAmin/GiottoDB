@@ -2,31 +2,18 @@
 % Please edit documentation in R/spatial_chunking.R
 \name{chunkSpatApply}
 \alias{chunkSpatApply}
-\alias{chunkSpatApplyPoly}
-\alias{chunkSpatApplyPoints}
-\title{Apply a function over spatially chunked data}
+\title{Apply a function in a spatially chunked manner}
 \usage{
-chunkSpatApplyPoly(
-  x = NULL,
+chunkSpatApply(
+  x,
   y = NULL,
   chunk_y = TRUE,
   fun,
   extent = NULL,
   n_per_chunk = getOption("gdb.nperchunk", 1e+05),
-  remote_name = NULL,
+  remote_name = result_count(),
   progress = TRUE,
   ...
-)
-
-chunkSpatApplyPoints(
-  x = NULL,
-  y = NULL,
-  chunk_y = TRUE,
-  fun,
-  extent = NULL,
-  n_per_chunk = getOption("gdb.nperchunk", 1e+05),
-  remote_name = NULL,
-  progress = TRUE
 )
 }
 \arguments{
@@ -38,7 +25,8 @@ dbPointsProxy object}
 \item{chunk_y}{(default = TRUE) whether y also needs to be spatially chunked
 if it is provided.}
 
-\item{fun}{function to apply}
+\item{fun}{function to apply. The only param(s) that 'fun' should
+have are x and (optionally) y, based on the inputs to `chunkSpatApply.`}
 
 \item{extent}{spatial extent of data to apply across. Defaults to the extent
 of \code{x} if not given}
@@ -51,10 +39,18 @@ generic incrementing 'gdb_nnn' if not given}
 
 \item{progress}{whether to plot the progress}
 
-\item{...}{additional params to pass to GiottoDB object creation}
+\item{...}{additional params to pass to [dbvect]}
 }
 \value{
 dbPolygonProxy or dbPointsProxy
+chunk_plan slightly expands bounds, allowing for use of 'soft' selections
+with extent_filter() on two out of four sides during the chunk processing
+Calculations with y are expected to be performed relative to x. Spatial
+chunk subsetting of y is performed based on the updated extent of the x
+chunks after their chunk subset.
+1. Setup lapply
+2. Run provided function
+3. write or return values
 }
 \description{
 Split a function operation into multiple spatial chunks. Results are appended

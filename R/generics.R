@@ -18,7 +18,6 @@ setGeneric('create_index', function(x, name, column, unique, ...) standardGeneri
 setGeneric('is_init', function(x, ...) standardGeneric('is_init'))
 
 # dbSpatProxyData object interactions ####
-setGeneric('chunkSpatApply', function(x, y, fun, extent, ...) standardGeneric('chunkSpatApply'))
 setGeneric('extent_calculate', function(x, ...) standardGeneric('extent_calculate'))
 setGeneric('extent_filter', function(x, extent, include, ...) standardGeneric('extent_filter'))
 setGeneric('filter_dbspat', function(x, by_geom, by_value, ...) standardGeneric('filter_dbspat'))

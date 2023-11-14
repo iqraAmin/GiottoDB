@@ -1,16 +1,17 @@
 
 #' @importClassesFrom terra SpatExtent
+#' @import GiottoUtils
 #' @importFrom terra plot
 #' @importFrom terra as.points as.polygons
 #' @importMethodsFrom terra crop
 #' @importMethodsFrom terra values
 #' @importMethodsFrom terra query
 #' @importMethodsFrom terra ext ext<-
+#' @importMethodsFrom GiottoClass calculateOverlap createGiottoPoints createGiottoPolygon
 #' @importFrom methods as callNextMethod initialize new slot slot<- validObject setAs
-#' @importFrom utils capture.output
+#' @importFrom utils capture.output flush.console
+#' @importFrom graphics par rect
 #' @importFrom pool Pool
-#' @import GiottoUtils
-#' @importFrom magrittr %>%
 #' @importFrom data.table ":="
 NULL
 

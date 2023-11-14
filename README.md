@@ -136,7 +136,7 @@ Data that requires out of memory processing is often too large to load into memo
 
 -   `stop_cond` is a function to run on each chunk of read-in data. Will break the chunk read looping when it evaluates to `TRUE`. A default function is provided (`function(x) nrow(x) == 0L`) that will stop the looping when a chunk is read in that has 0 rows.
 
--    `write_fun` is a function that controls how the chunk is written to the database. Default functions will automatically run for `data.table` and *terra* `SpatVector` chunks. Custom functions should be defined for specific situations such as when more than one table should be created per chunk of data read-in. Required params to expose are `p`, `remote_name`, `x`, and `…`.
+-   `write_fun` is a function that controls how the chunk is written to the database. Default functions will automatically run for `data.table` and *terra* `SpatVector` chunks. Custom functions should be defined for specific situations such as when more than one table should be created per chunk of data read-in. Required params to expose are `p`, `remote_name`, `x`, and `…`.
 
 -   `overwrite` whether to overwrite if table already exists (default is `FALSE`)
 

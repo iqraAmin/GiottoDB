@@ -32,7 +32,8 @@ Imports:
     duckdb,
     dplyr,
     fs,
-    magrittr,
+    GiottoClass,
+    GiottoUtils,
     methods,
     pool,
     terra (>= 1.7),
@@ -64,6 +65,8 @@ Collate:
     'dbvect.R'
     'dd.R'
     'fields_preset.R'
+    'giotto_structures.R'
+    'globals.R'
     'logging.R'
     'names.R'
     'operations.R'

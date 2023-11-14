@@ -91,11 +91,10 @@ f
 v <- vect(f)
 
 dbpoly <- dbvect(v, overwrite = TRUE)
-}
 
 ## Appending geometries
 nrow(dbpoly)
 dbpoly <- dbvect(v, overwrite = "append")
 nrow(dbpoly)
-
+}
 }

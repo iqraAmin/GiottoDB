@@ -277,5 +277,55 @@ setMethod(
 
 
 
+## $ ####
+
+setMethod('$', signature('dbPointsProxy'), function(x, name) {
+  x <- reconnect(x)
+  x[] %>%
+    dplyr::arrange(.uID) %>%
+    dplyr::pull(!!name)
+})
+
+setMethod('$', signature('dbPolygonProxy'), function(x, name) {
+  x <- reconnect(x)
+  x@attributes[] %>%
+    dplyr::arrange(geom) %>%
+    dplyr::pull(!!name)
+})
+
+## $<- ####
+#
+# setMethod('$<-', signature('dbPointsProxy'), function(x, name, value) {
+#   x <- reconnect(x)
+#   p = cPool(x)
+#   conn <- evaluate_conn(p, mode = 'conn')
+#   on.exit(pool::poolReturn(conn), add = TRUE)
+#   cPool(x) <- conn
+#
+#   n_row <- nrow(x)
+#   if (length(value) != n_row) {
+#     if (n_row %% length(value) != 0 ||
+#         n_row < length(value)) {
+#       warning(GiottoUtils::wrap_txt(
+#         'Number of geometries is not a multiple of length of attributes to assign.'
+#       ))
+#     }
+#
+#     value <- rep(value, length.out = n_row)
+#   }
+#
+#   assign_dfr <- data.frame(
+#     idx = seq_along(value),
+#     value = value
+#   )
+#
+#   # TODO
+#
+#   x[] <- x[] %>%
+#     dplyr::mutate(!!name := value)
+#
+#   cPool(x) <- p
+#   return(x)
+# })
 
 
