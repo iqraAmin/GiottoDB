@@ -628,6 +628,8 @@ setMethod( # FOR POINT VALUE
 #' @noRd
 setMethod('dbspat_to_sv', signature(x = 'dbPolygonProxy'), function(x, ...) {
   geom = x@data %>%
+    castNumeric('x') %>%
+    castNumeric('y') %>%
     dplyr::arrange(geom) %>%
     dplyr::collect()
   atts = x@attributes@data %>%
@@ -643,7 +645,10 @@ setMethod('dbspat_to_sv', signature(x = 'dbPolygonProxy'), function(x, ...) {
 #' @keywords internal
 #' @noRd
 setMethod('dbspat_to_sv', signature(x = 'dbPointsProxy'), function(x, ...) {
-  DT = dplyr::collect(x@data)
+  DT = x@data %>%
+    castNumeric('x') %>%
+    castNumeric('y') %>%
+    dplyr::collect()
   terra::vect(DT, geom = c('x', 'y'), keepgeom = FALSE)
 })
 
