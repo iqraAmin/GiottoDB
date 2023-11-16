@@ -223,7 +223,7 @@ setMethod('castNumeric', signature(x = 'ANY', col = 'character'), function(x, co
                 inherits(x, 'tbl_lazy'))
 
     sym_col = dplyr::sym(col)
-    x[] = x[] %>% dplyr::mutate(!!sym_col := as.numeric(!!sym_col))
+    x = x %>% dplyr::mutate(!!sym_col := as.numeric(!!sym_col))
   }
   x
 })
@@ -236,7 +236,7 @@ setMethod('castCharacter', signature(x = 'ANY', col = 'character'), function(x, 
                 inherits(x, 'tbl_lazy'))
 
     sym_col = dplyr::sym(col)
-    x[] = x[] %>% dplyr::mutate(!!sym_col := as.character(!!sym_col))
+    x = x %>% dplyr::mutate(!!sym_col := as.character(!!sym_col))
   }
   x
 })
@@ -249,7 +249,7 @@ setMethod('castLogical', signature(x = 'ANY', col = 'character'), function(x, co
                 inherits(x, 'tbl_lazy'))
 
     sym_col = dplyr::sym(col)
-    x[] = x[] %>% dplyr::mutate(!!sym_col := as.logical(!!sym_col))
+    x = x %>% dplyr::mutate(!!sym_col := as.logical(!!sym_col))
   }
   x
 })
