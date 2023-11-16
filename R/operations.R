@@ -155,27 +155,101 @@ setMethod('tail', signature(x = 'dbDataFrame'), function(x, n = 6L, ...) {
 #' Get the column data types of objects that inherit from \code{'dbData'}
 #' @param x GiottoDB data object
 #' @param ... additional params to pass
+NULL
+
+#' @rdname colTypes
 #' @export
 setMethod('colTypes', signature(x = 'dbData'), function(x, ...) {
   vapply(data.table::as.data.table(head(x[], 1L)), typeof, character(1L))
 })
 
-## castNumeric ####
+#' @rdname colTypes
+#' @export
+setMethod('colTypes', signature(x = 'ANY'), function(x, ...) {
+  stopifnot('Unable to find an inherited method for \'queryStack\'' =
+              inherits(x, 'tbl_lazy'))
+  vapply(data.table::as.data.table(head(x, 1L)), typeof, character(1L))
+})
 
-#' @name castNumeric
-#' @title Set a column to numeric
+
+## cast ####
+
+#' @name cast
+#' @title Cast a column to a different type
 #' @description
-#' Sets a column to numeric after first checking the column data type. Does
-#' nothing if the column is already a \code{double}
+#' Converts a column after first checking the column data type. Does
+#' nothing if the column is already of that type
 #' This precaution is to avoid truncation of values.
 #' @param x GiottoDB data object
-#' @param col column to cast to numeric
+#' @param col column to cast
 #' @param ... additional params to pass
+NULL
+
+#' @rdname cast
 #' @export
 setMethod('castNumeric', signature(x = 'dbData', col = 'character'), function(x, col, ...) {
   if(colTypes(x)[col] != 'double') {
     sym_col = dplyr::sym(col)
     x[] = x[] %>% dplyr::mutate(!!sym_col := as.numeric(!!sym_col))
+  }
+  x
+})
+
+#' @rdname cast
+#' @export
+setMethod('castCharacter', signature(x = 'dbData', col = 'character'), function(x, col, ...) {
+  if(colTypes(x)[col] != 'character') {
+    sym_col = dplyr::sym(col)
+    x[] = x[] %>% dplyr::mutate(!!sym_col := as.character(!!sym_col))
+  }
+  x
+})
+
+#' @rdname cast
+#' @export
+setMethod('castLogical', signature(x = 'dbData', col = 'character'), function(x, col, ...) {
+  if(colTypes(x)[col] != 'logical') {
+    sym_col = dplyr::sym(col)
+    x[] = x[] %>% dplyr::mutate(!!sym_col := as.logical(!!sym_col))
+  }
+  x
+})
+
+#' @rdname cast
+#' @export
+setMethod('castNumeric', signature(x = 'ANY', col = 'character'), function(x, col, ...) {
+  if(colTypes(x)[col] != 'double') {
+    stopifnot('Unable to find an inherited method for \'castNumeric\'' =
+                inherits(x, 'tbl_lazy'))
+
+    sym_col = dplyr::sym(col)
+    x[] = x[] %>% dplyr::mutate(!!sym_col := as.numeric(!!sym_col))
+  }
+  x
+})
+
+#' @rdname cast
+#' @export
+setMethod('castCharacter', signature(x = 'ANY', col = 'character'), function(x, col, ...) {
+  if(colTypes(x)[col] != 'character') {
+    stopifnot('Unable to find an inherited method for \'castCharacter\'' =
+                inherits(x, 'tbl_lazy'))
+
+    sym_col = dplyr::sym(col)
+    x[] = x[] %>% dplyr::mutate(!!sym_col := as.character(!!sym_col))
+  }
+  x
+})
+
+#' @rdname cast
+#' @export
+setMethod('castLogical', signature(x = 'ANY', col = 'character'), function(x, col, ...) {
+  if(colTypes(x)[col] != 'logical') {
+    stopifnot('Unable to find an inherited method for \'castLogical\'' =
+                inherits(x, 'tbl_lazy'))
+
+    sym_col = dplyr::sym(col)
+    x[] = x[] %>% dplyr::mutate(!!sym_col := as.logical(!!sym_col))
   }
   x
 })

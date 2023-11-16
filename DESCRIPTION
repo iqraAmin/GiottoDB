@@ -39,6 +39,7 @@ Imports:
     terra (>= 1.7),
     tidyr
 Suggests:
+    DelayedArray,
     future,
     future.apply,
     future.callr,
@@ -46,6 +47,7 @@ Suggests:
     rhdf5,
     rstudioapi,
     testthat (>= 3.0.0),
+    IRanges,
     knitr,
     rmarkdown
 Collate: 

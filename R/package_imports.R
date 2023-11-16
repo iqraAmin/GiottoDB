@@ -7,7 +7,7 @@
 #' @importMethodsFrom terra values
 #' @importMethodsFrom terra query
 #' @importMethodsFrom terra ext ext<-
-#' @importMethodsFrom GiottoClass calculateOverlap createGiottoPoints createGiottoPolygon
+#' @importMethodsFrom GiottoClass calculateOverlap createGiottoPoints createGiottoPolygon overlapToMatrix
 #' @importFrom methods as callNextMethod initialize new slot slot<- validObject setAs
 #' @importFrom utils capture.output flush.console
 #' @importFrom graphics par rect

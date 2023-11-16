@@ -81,7 +81,7 @@ sql_gen_simple_filter = function(x, select, where, ...) {
 
 
 # sql_query ####
-#' @name sql_query-generic
+#' @name sql_query
 #' @title Query a database object
 #' @description
 #' Query a database object using a manually prepared SQL statement.
@@ -89,6 +89,8 @@ sql_gen_simple_filter = function(x, select, where, ...) {
 #' @param x a database object
 #' @param statement query statement in SQL where the FROM field should be :data:
 #' @param drop return as GiottoDB object if FALSE. dbplyr tbl if TRUE
+#' @param use_qname whether to use a query name. Finds the ":qname:" tag and
+#' replaces it with the query name
 #' @param ... additional params to pass
 #' @details
 #' Prepared SQL with properly quoted parameters are provided through the
@@ -96,32 +98,60 @@ sql_gen_simple_filter = function(x, select, where, ...) {
 #' This token is then replaced with the rendered SQL chain from the object being
 #' queried, effectively appending the new instructions. This set of appended
 #' instructions are then used to update the object.
-#' @keywords internal
+NULL
+
+#' @rdname sql_query
 setMethod(
   'sql_query', signature(x = 'dbData', statement = 'character'),
   function(x, statement, drop = FALSE, ...)
   {
     x = reconnect(x)
-    p = cPool(x)
-    conn = pool::poolCheckout(p)
-    on.exit(try(pool::poolReturn(conn), silent = TRUE))
 
-    statement = gsub(
-      pattern = ':data:',
-      replacement = paste0('(', dbplyr::sql_render(query  = x[], con = conn), ')'),
-      x = statement,
-      fixed = TRUE
-    )
-    pool::poolReturn(conn)
-
-    res <- dplyr::tbl(src = p, dbplyr::sql(statement))
+    res <- sql_query(x[], statement, ...)
 
     if (isTRUE(drop)) return(res)
     x[] = res
     x
   })
 
+#' @rdname sql_query
+setMethod(
+  'sql_query', signature(x = 'ANY', statement = 'character'),
+  function(x, statement, use_qname = TRUE, ...)
+  {
+    if (!inherits(x, 'tbl_sql')) {
+      stopf('sql_query: if x is not dbData, must inherit from tbl_sql')
+    }
 
+    p = cPool(x)
+    conn = pool::poolCheckout(p)
+    on.exit(try(pool::poolReturn(conn), silent = TRUE))
+
+    # get query name
+    query_name <- ""
+    if (isTRUE(use_qname)) {
+      collapsed_q <- dplyr::collapse(x)$lazy_query$x
+      query_name <- regmatches(collapsed_q, regexpr('q(\\d).\\.\\*', collapsed_q)) %>%
+        gsub('\\.\\*', '', .)
+    }
+
+
+    statement = gsub(
+      pattern = ':data:',
+      replacement = paste0('(', dbplyr::sql_render(query = x, con = conn), ')'),
+      x = paste(statement),
+      fixed = TRUE
+    )
+    statement <- gsub(
+      pattern = ":qname:",
+      replacement = query_name,
+      x = statement,
+      fixed = TRUE
+    )
+    pool::poolReturn(conn)
+
+    dplyr::tbl(src = p, dbplyr::sql(statement))
+  })
 
 
 

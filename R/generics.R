@@ -14,6 +14,8 @@ setGeneric('queryStack<-', function(x, ..., value) standardGeneric('queryStack<-
 setGeneric('sql_query', function(x, statement, ...) standardGeneric('sql_query'))
 setGeneric('colTypes', function(x, ...) standardGeneric('colTypes'))
 setGeneric('castNumeric', function(x, col, ...) standardGeneric('castNumeric'))
+setGeneric('castCharacter', function(x, col, ...) standardGeneric('castCharacter'))
+setGeneric('castLogical', function(x, col, ...) standardGeneric('castLogical'))
 setGeneric('create_index', function(x, name, column, unique, ...) standardGeneric('create_index'))
 setGeneric('is_init', function(x, ...) standardGeneric('is_init'))
 

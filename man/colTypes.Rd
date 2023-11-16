@@ -2,9 +2,13 @@
 % Please edit documentation in R/operations.R
 \name{colTypes}
 \alias{colTypes}
+\alias{colTypes,dbData-method}
+\alias{colTypes,ANY-method}
 \title{Column data types of GiottoDB objects}
 \usage{
 \S4method{colTypes}{dbData}(x, ...)
+
+\S4method{colTypes}{ANY}(x, ...)
 }
 \arguments{
 \item{x}{GiottoDB data object}
