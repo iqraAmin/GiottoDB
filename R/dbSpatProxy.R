@@ -631,6 +631,7 @@ setMethod('dbspat_to_sv', signature(x = 'dbPolygonProxy'), function(x, ...) {
     castNumeric('x') %>%
     castNumeric('y') %>%
     dplyr::arrange(geom) %>%
+    dplyr::relocate(geom, part, x, y, hole) %>%
     dplyr::collect()
   atts = x@attributes@data %>%
     dplyr::arrange(geom) %>%

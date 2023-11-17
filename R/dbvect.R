@@ -62,6 +62,44 @@ setMethod(
     )
   })
 
+# giottoPoints #
+
+#' @rdname dbvect
+#' @export
+setMethod(
+  'dbvect', signature(x = "giottoPoints"),
+  function(
+    x, db = ":temp:", remote_name = "dbv_test", drop = TRUE, ...
+  ) {
+    res <- dbvect_poly_sv(x[], db, remote_name, ...)
+
+    if (isTRUE(drop)) {
+      return(res)
+    } else {
+      x[] <- res
+      return(x)
+    }
+  }
+)
+
+#' @rdname dbvect
+#' @export
+setMethod(
+  'dbvect', signature(x = "giottoPoints"),
+  function(
+    x, db = ":temp:", remote_name = "dbv_test", drop = TRUE, ...
+  ) {
+    res <- dbvect_points_sv(x[], db, remote_name, ...)
+
+    if (isTRUE(drop)) {
+      return(res)
+    } else {
+      x[] <- res
+      return(x)
+    }
+  }
+)
+
 # SpatVector #
 
 #' @rdname dbvect
