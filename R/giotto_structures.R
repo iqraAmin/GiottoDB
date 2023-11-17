@@ -255,13 +255,17 @@ h5_array_write <- function(
     if (length(GiottoUtils::file_extension(filepath)) == 0) {
       filepath <- paste0(filepath, '/', name, '_matrix.h5')
     }
-    if (file.exists(filepath) && isTRUE(overwrite)) {
-      unlink(filepath)
-    } else {
-      stop(wrap_txt(
-        "HDF5Matrix already exists here.
-        Set overwrite = TRUE or choose other filepath."
-      ))
+
+    # overwrite
+    if (file.exists(filepath)) {
+      if (isTRUE(overwrite)) {
+        unlink(filepath)
+      } else {
+        stop(wrap_txt(
+          "HDF5Matrix already exists here.
+          Set overwrite = TRUE or choose other filepath."
+        ))
+      }
     }
   }
 
