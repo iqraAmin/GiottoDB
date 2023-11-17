@@ -482,7 +482,10 @@ dbvect_points_df = function(
 
     # increment .uID index
     x[, .uID := .uID + start_index]
-    x[, feat_ID_uniq := .uID] # unique feat ID should be the same here
+    if (!feat_ID_uniq %in% colnames(x)) {
+      x[, feat_ID_uniq := .uID] # unique feat ID should be the same here
+    }
+
   }
 
   # write values to database
