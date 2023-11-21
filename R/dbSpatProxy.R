@@ -655,9 +655,12 @@ setMethod('dbspat_to_sv', signature(x = 'dbPolygonProxy'), function(x, ...) {
 #' @noRd
 setMethod('dbspat_to_sv', signature(x = 'dbPointsProxy'), function(x, ...) {
   DT = x@data %>%
-    castNumeric('x') %>%
-    castNumeric('y') %>%
-    dplyr::collect()
+    dplyr::collect() %>%
+    data.table::as.data.table()
+
+  DT[, x := as.numeric(x)]
+  DT[, y := as.numeric(y)]
+
   terra::vect(DT, geom = c('x', 'y'), keepgeom = FALSE)
 })
 

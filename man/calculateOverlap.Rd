@@ -13,6 +13,7 @@
   feat_subset_column = NULL,
   feat_subset_ids = NULL,
   count_info_column = NULL,
+  verbose = TRUE,
   ...
 )
 }

@@ -12,6 +12,7 @@ setMethod(
     feat_subset_column = NULL,
     feat_subset_ids = NULL,
     count_info_column = NULL,
+    verbose = TRUE,
     ...
   )
   {
@@ -48,20 +49,33 @@ setMethod(
       )
     }
 
+    if (isTRUE(verbose)) {
+      wrap_msg('Start chunked overlaps')
+    }
+
+    chunk_out_name <- result_count() # use a new temp name
 
     # 3. spatial chunking
     res <- chunkSpatApply(
       x = x,
       y = y,
-      remote_name = remote_name,
+      remote_name = chunk_out_name,
       chunk_y = TRUE,
       n_per_chunk = n_per_chunk,
       fun = chunk_fun
     )
 
+    if (isTRUE(verbose)) {
+      wrap_msg('Finish chunked overlaps')
+    }
 
     # 4. output cleanup #
     # ----------------- #
+
+    if (isTRUE(verbose)) {
+      message('Running cleanups')
+      message(' - Including missing features')
+    }
 
     # 4.1 dbvect write in any missing features
     missing_pts <- which(!y$feat_ID_uniq %in% res$feat_ID_uniq)
@@ -71,11 +85,16 @@ setMethod(
       dbvect(
         x = missing_sv,
         db = cPool(x),
-        remote_name = remoteName(res),
+        remote_name = chunk_out_name,
         overwrite = 'append',
         return_object = FALSE
       )
     }
+
+    if (isTRUE(verbose)) {
+      message(' - Cleanup overlap doublecounts')
+    }
+
 
     # 4.2 cleanup doublecounts
     # strategy:
@@ -94,6 +113,23 @@ setMethod(
       dplyr::ungroup() %>%
       dplyr::mutate(.uID = dplyr::row_number()) %>%
       dplyr::collapse()
+
+
+    if (isTRUE(verbose)) {
+      message(' - Write final table')
+    }
+
+    res[] <- res[] %>%
+      # this is a lot of stacked queries and the output tends to be very slow.
+      # We will write this out as the final table to return
+      dplyr::compute(temporary = FALSE,
+                     name = remote_name,
+                     unique_indexes = list('.uID')) # key on .uID
+
+    # drop the temp table
+    dropTableBE(cPool(x), chunk_out_name)
+
+    res@remote_name <- remote_name
 
     return(res)
   }
