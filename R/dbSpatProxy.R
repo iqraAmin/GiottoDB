@@ -20,7 +20,7 @@ setMethod('initialize', signature('dbSpatProxyData'), function(.Object, extent, 
 
   if(!is.null(.Object@data)) {
     # TODO: extent needs to be reworked to be numeric
-    if (inherits(try(print(.Object@extent), silent = TRUE), 'try-error')) {
+    if (inherits(try(terra::ext(.Object@extent), silent = TRUE), 'try-error')) {
       .Object@extent = extent_calculate(.Object) # for null pointers
     }
     if (sum(.Object@extent[]) == 0) {
@@ -655,12 +655,9 @@ setMethod('dbspat_to_sv', signature(x = 'dbPolygonProxy'), function(x, ...) {
 #' @noRd
 setMethod('dbspat_to_sv', signature(x = 'dbPointsProxy'), function(x, ...) {
   DT = x@data %>%
-    dplyr::collect() %>%
-    data.table::as.data.table()
-
-  DT[, x := as.numeric(x)]
-  DT[, y := as.numeric(y)]
-
+    castNumeric('x') %>%
+    castNumeric('y') %>%
+    dplyr::collect()
   terra::vect(DT, geom = c('x', 'y'), keepgeom = FALSE)
 })
 

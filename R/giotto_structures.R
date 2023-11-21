@@ -74,29 +74,10 @@ setMethod(
 
     if (isTRUE(verbose)) {
       message('Running cleanups')
-      message(' - Including missing features')
-    }
-
-    # 4.1 dbvect write in any missing features
-    missing_pts <- which(!y$feat_ID_uniq %in% res$feat_ID_uniq)
-    if (length(missing_pts > 0L)) {
-      missing_sv <- as.points(y[missing_pts,])
-      missing_sv <- missing_sv[, c('feat_ID', 'feat_ID_uniq')]
-      dbvect(
-        x = missing_sv,
-        db = cPool(x),
-        remote_name = chunk_out_name,
-        overwrite = 'append',
-        return_object = FALSE
-      )
-    }
-
-    if (isTRUE(verbose)) {
       message(' - Cleanup overlap doublecounts')
     }
 
-
-    # 4.2 cleanup doublecounts
+    # 4.1 cleanup doublecounts
     # strategy:
     #   flag dups as:           -1
     #   flag first in group as:  1
@@ -115,16 +96,46 @@ setMethod(
       dplyr::collapse()
 
 
+
     if (isTRUE(verbose)) {
-      message(' - Write final table')
+      message(' - Compute to permanent')
     }
 
+    # this is a lot of stacked queries and the output tends to be very slow.
+    # We will write this out as the final table to return
     res[] <- res[] %>%
-      # this is a lot of stacked queries and the output tends to be very slow.
-      # We will write this out as the final table to return
       dplyr::compute(temporary = FALSE,
                      name = remote_name,
                      unique_indexes = list('.uID')) # key on .uID
+
+    if (isTRUE(verbose)) {
+      message(' - Including missing features')
+    }
+
+
+
+    # 4.2 dbvect write in any missing features
+    missing_pts <- which(!y$feat_ID_uniq %in% res$feat_ID_uniq)
+    if (length(missing_pts) > 0L) {
+
+      res[] <- res[] %>%
+        dplyr::rows_insert(
+          y = y[missing_pts,][], # find missing pts then drop to tbl
+          by = '.uID',
+          in_place = TRUE
+        )
+
+      # missing_sv <- as.points(y[missing_pts,])
+      # missing_sv <- missing_sv[, c('feat_ID', 'feat_ID_uniq')]
+      # dbvect(
+      #   x = missing_sv,
+      #   db = cPool(x),
+      #   remote_name = chunk_out_name,
+      #   overwrite = 'append',
+      #   return_object = FALSE
+      # )
+    }
+
 
     # drop the temp table
     dropTableBE(cPool(x), chunk_out_name)

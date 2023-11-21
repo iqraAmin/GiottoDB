@@ -117,89 +117,55 @@ chunkSpatApply <- function(x,
   n_chunks = length(chunk_x_list)
   progressr::with_progress({
     pb = progressr::progressor(steps = n_chunks)
-    dbproxy_list <- lapply(
-      X = seq(n_chunks),
-      function(chunk_x_list, chunk_y_input, fun, p, chunk_i) {
 
-        # convert x (and y if given) to terra
-        # run function on x, and conditionally, y
-        chunk_x = as.spatvector(chunk_x_list[[chunk_i]])
-        chunk_output = if(is.null(chunk_y_input)) {
-          # x only
-          fun(x = chunk_x)
+    for (chunk_i in seq(n_chunks)) {
+
+      # convert x (and y if given) to terra
+      # run function on x, and conditionally, y
+      chunk_x = as.spatvector(chunk_x_list[[chunk_i]])
+      chunk_output = if(is.null(chunk_y_input)) {
+        # x only
+        fun(x = chunk_x)
+      } else {
+        # x and y
+        if(!inherits(chunk_y_input, 'list')) {
+          # single y
+          fun(x = chunk_x,
+              y = chunk_y_input)
         } else {
-          # x and y
-          if(!inherits(chunk_y_input, 'list')) {
-            # single y
-            fun(x = chunk_x,
-                y = chunk_y_input)
-          } else {
-            # chunked y values
-            fun(x = chunk_x,
-                y = as.spatvector(chunk_y_input[[chunk_i]]))
-          }
+          # chunked y values
+          fun(x = chunk_x,
+              y = as.spatvector(chunk_y_input[[chunk_i]]))
         }
+      }
 
-        # write/append values #
+      # write/append values #
 
-        # don't make an object until final chunk
-        return_object <- chunk_i == n_chunks
-        # include expected geom values for polygons
-        dbvect_output <- dbvect(
-          x = chunk_output,
-          db = p,
-          remote_name = remote_name,
-          overwrite = 'append',
-          return_object = return_object,
-          ...
-        )
+      # don't make an object until final chunk
+      return_object <- chunk_i == n_chunks
+      # include expected geom values for polygons
+      dbvect_output <- dbvect(
+        x = chunk_output,
+        db = p,
+        remote_name = remote_name,
+        overwrite = 'append',
+        return_object = return_object,
+        ...
+      )
+      # dbvect_output expected to be all NULL except for the final object
+      # generated during the last chunk
 
-        # update progress and return
-        pb()
-        # dbvect_output expected to be all NULL except for the final object
-        # generated during the last chunk
-        return(dbvect_output)
-      },
-      chunk_x_list = chunk_x_list,
-      chunk_y_input = chunk_y_input,
-      fun = fun,
-      p = p
-    )
-  })
+      # update progress and return
+      pb()
+    }
+
+  }) # progressr end
 
 
   # return object #
   # --------------- #
 
-  return(unlist(dbproxy_list)[[1L]])
-
-  # res_tbl = tableBE(p, remote_name)
-  # out = switch(
-  #   output,
-  #   'tbl' = {
-  #     return(res_tbl)
-  #   },
-  #   'dbPolygonProxy' = {
-  #     return(
-  #       dbPolygonProxy(
-  #         attributes = dbDataFrame(
-  #           key = 'geom',
-  #           data = dplyr::tbl(p, paste0(remote_name, '_attr')),
-  #           hash = x@hash,
-  #           remote_name = paste0(remote_name, '_attr'),
-  #           init = TRUE
-  #         ),
-  #         data = res_tbl,
-  #         hash = x@hash,
-  #         remote_name = remote_name,
-  #         init = TRUE
-  #       )
-  #     )
-  #   },
-  #   'dbPointsProxy' = {
-  #     # TODO
-  #   }
-  # )
+  return(dbvect_output)
 }
 
 
