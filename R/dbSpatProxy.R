@@ -20,7 +20,7 @@ setMethod('initialize', signature('dbSpatProxyData'), function(.Object, extent, 
 
   if(!is.null(.Object@data)) {
     # TODO: extent needs to be reworked to be numeric
-    if (inherits(try(.Object@extent, silent = TRUE), 'try-error')) {
+    if (inherits(try(print(.Object@extent), silent = TRUE), 'try-error')) {
       .Object@extent = extent_calculate(.Object) # for null pointers
     }
     if (sum(.Object@extent[]) == 0) {
