@@ -3,6 +3,7 @@
 \name{dbvect}
 \alias{dbvect}
 \alias{dbvect,data.frame-method}
+\alias{dbvect,giottoPoints-method}
 \alias{dbvect,SpatVector-method}
 \alias{dbvect,character-method}
 \title{Create a framework for chunked processing with terra SpatVectors}
@@ -15,6 +16,10 @@
   geom = c("x", "y"),
   ...
 )
+
+\S4method{dbvect}{giottoPoints}(x, db = ":temp:", remote_name = "dbv_test", drop = TRUE, ...)
+
+\S4method{dbvect}{giottoPoints}(x, db = ":temp:", remote_name = "dbv_test", drop = TRUE, ...)
 
 \S4method{dbvect}{SpatVector}(x, db = ":temp:", remote_name = "dbv_test", ...)
 

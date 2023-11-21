@@ -15,10 +15,6 @@ setMethod('ext<-', signature(x = 'dbSpatProxyData', value = 'SpatExtent'), funct
 
 
 
-# doSpatChunk ####
-
-
-# setMethod('chunkApply')
 
 #' @name chunkSpatApply
 #' @title Apply a function in a spatially chunked manner
@@ -30,51 +26,30 @@ setMethod('ext<-', signature(x = 'dbSpatProxyData', value = 'SpatExtent'), funct
 #' in their processing after the chunk has been pulled into memory and only needs
 #' to be combined into one before being written.
 #' @param x dbPolygonProxy or dbPointsProxy
-#' @param y dbPointsProxy (if appropriate for the function)
-#' @param fun function to apply
-#' @param extent (optional) spatial extent to chunk across. Takes the extent of
-#' \code{x} by default
-#' @param n_per_chunk (optional) desired max number of records to process per chunk
-#' This value can be set using setting \code{options(gdb.nperchunk = ?)}
-#' @param remote_name name to assign results in database
-#' @param ... additional params to pass to \code{\link[future.apply]{future_lapply}}
-NULL
-
-
-
-
-
-# determine n chunks and allocate indices if needed
-
-# run chunkSpatApplyPoly or chunkSpatApplyPoints depending on which type of
-# output is expected
-
-#' @rdname chunkSpatApply
-#' @param x dbPolygonProxy or dbPointsProxy
-#' @param y missing/null if not needed. Otherwise accepts a dbPolygonProxy or
-#' dbPointsProxy object
+#' @param y dbPolygonProxy or dbPointsProxy (missing/NULL if not needed)
 #' @param chunk_y (default = TRUE) whether y also needs to be spatially chunked
 #' if it is provided.
 #' @param fun function to apply. The only param(s) that 'fun' should
 #' have are x and (optionally) y, based on the inputs to `chunkSpatApply.`
-#' @param extent spatial extent of data to apply across. Defaults to the extent
-#' of \code{x} if not given
-#' @param n_per_chunk (default is 1e5) number of records to try to process per chunk.
-#' This value can be set globally using options(gdb.nperchunk = ?)
+#' @param extent (optional) spatial extent to chunk across. Takes the extent of
+#' \code{x} by default
+#' @param n_per_chunk (default is 1e5) desired max number of records to process
+#' per chunk. This value can be set using setting \code{options(gdb.nperchunk = ?)}
 #' @param remote_name name to assign the result in the database. Defaults to a
-#' generic incrementing 'gdb_nnn' if not given
 #' @param progress whether to plot the progress
+#' generic incrementing 'gdb_nnn' if not given
 #' @param ... additional params to pass to [dbvect]
 #' @return dbPolygonProxy or dbPointsProxy
-chunkSpatApply = function(x,
-                          y = NULL,
-                          chunk_y = TRUE,
-                          fun,
-                          extent = NULL,
-                          n_per_chunk = getOption('gdb.nperchunk', 1e5),
-                          remote_name = result_count(),
-                          progress = TRUE,
-                          ...) {
+#' @export
+chunkSpatApply <- function(x,
+                           y = NULL,
+                           chunk_y = TRUE,
+                           fun,
+                           extent = NULL,
+                           n_per_chunk = getOption('gdb.nperchunk', 1e5),
+                           remote_name = result_count(),
+                           progress = TRUE,
+                           ...) {
 
   checkmate::assert_class(x, 'dbSpatProxyData')
   if(!is.null(y)) checkmate::assert_class(y, 'dbSpatProxyData')
@@ -89,16 +64,16 @@ chunkSpatApply = function(x,
   # ------------------ #
   n_rec = nrow(x) # number of records
   min_chunks = n_rec / n_per_chunk
-  #' chunk_plan slightly expands bounds, allowing for use of 'soft' selections
-  #' with extent_filter() on two out of four sides during the chunk processing
+  # chunk_plan slightly expands bounds, allowing for use of 'soft' selections
+  # with extent_filter() on two out of four sides during the chunk processing
   ext_list = chunk_plan(extent = extent, min_chunks = min_chunks)
 
 
   # chunk data #
   # ---------- #
-  #' Calculations with y are expected to be performed relative to x. Spatial
-  #' chunk subsetting of y is performed based on the updated extent of the x
-  #' chunks after their chunk subset.
+  # Calculations with y are expected to be performed relative to x. Spatial
+  # chunk subsetting of y is performed based on the updated extent of the x
+  # chunks after their chunk subset.
 
   # filter data to chunk ROI
   chunk_x_list = lapply(
@@ -136,9 +111,9 @@ chunkSpatApply = function(x,
   }
 
 
-  #' 1. Setup lapply
-  #' 2. Run provided function
-  #' 3. write or return values
+  # 1. Setup lapply
+  # 2. Run provided function
+  # 3. write or return values
   n_chunks = length(chunk_x_list)
   progressr::with_progress({
     pb = progressr::progressor(steps = n_chunks)

@@ -19,8 +19,7 @@ chunkSpatApply(
 \arguments{
 \item{x}{dbPolygonProxy or dbPointsProxy}
 
-\item{y}{missing/null if not needed. Otherwise accepts a dbPolygonProxy or
-dbPointsProxy object}
+\item{y}{dbPolygonProxy or dbPointsProxy (missing/NULL if not needed)}
 
 \item{chunk_y}{(default = TRUE) whether y also needs to be spatially chunked
 if it is provided.}
@@ -28,29 +27,21 @@ if it is provided.}
 \item{fun}{function to apply. The only param(s) that 'fun' should
 have are x and (optionally) y, based on the inputs to `chunkSpatApply.`}
 
-\item{extent}{spatial extent of data to apply across. Defaults to the extent
-of \code{x} if not given}
+\item{extent}{(optional) spatial extent to chunk across. Takes the extent of
+\code{x} by default}
 
-\item{n_per_chunk}{(default is 1e5) number of records to try to process per chunk.
-This value can be set globally using options(gdb.nperchunk = ?)}
+\item{n_per_chunk}{(default is 1e5) desired max number of records to process
+per chunk. This value can be set using setting \code{options(gdb.nperchunk = ?)}}
 
-\item{remote_name}{name to assign the result in the database. Defaults to a
+\item{remote_name}{name to assign the result in the database. Defaults to a}
+
+\item{progress}{whether to plot the progress
 generic incrementing 'gdb_nnn' if not given}
-
-\item{progress}{whether to plot the progress}
 
 \item{...}{additional params to pass to [dbvect]}
 }
 \value{
 dbPolygonProxy or dbPointsProxy
-chunk_plan slightly expands bounds, allowing for use of 'soft' selections
-with extent_filter() on two out of four sides during the chunk processing
-Calculations with y are expected to be performed relative to x. Spatial
-chunk subsetting of y is performed based on the updated extent of the x
-chunks after their chunk subset.
-1. Setup lapply
-2. Run provided function
-3. write or return values
 }
 \description{
 Split a function operation into multiple spatial chunks. Results are appended

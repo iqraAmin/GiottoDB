@@ -538,7 +538,7 @@ setMethod('extent_filter',
 #' @export
 setMethod('crop', signature(x = 'dbSpatProxyData', y = 'SpatExtent'),
           function(x, y, ...) {
-            extent_filter(x, extent, ...)
+            extent_filter(x = x, extent = y, ...)
           })
 
 
