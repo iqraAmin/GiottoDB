@@ -698,7 +698,7 @@ setMethod('reconnect', signature(x = 'dbData'),
                     'Memory-only table that was never written to DB?')
             }
 
-            return(x)
+            return(initialize(x))
           })
 
 

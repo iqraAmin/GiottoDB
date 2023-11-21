@@ -19,7 +19,12 @@ setMethod('initialize', signature('dbSpatProxyData'), function(.Object, extent, 
   if(!missing(extent)) if(!is.null(extent)) .Object@extent = extent
 
   if(!is.null(.Object@data)) {
-    if(sum(.Object@extent[]) == 0) .Object@extent = extent_calculate(.Object)
+    if (inherits(try(.Object@extent), 'try-error')) {
+      .Object@extent = extent_calculate(.Object) # for null pointers
+    }
+    if (sum(.Object@extent[]) == 0) {
+      .Object@extent = extent_calculate(.Object) # replace placeholder ext
+    }
   }
 
   # check and return #
@@ -538,7 +543,9 @@ setMethod('extent_filter',
 #' @export
 setMethod('crop', signature(x = 'dbSpatProxyData', y = 'SpatExtent'),
           function(x, y, ...) {
-            extent_filter(x = x, extent = y, ...)
+            x <- extent_filter(x = x, extent = y, ...)
+            x@extent <- extent_calculate(x)
+            return(x)
           })
 
 
