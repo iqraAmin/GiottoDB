@@ -134,8 +134,11 @@ setMethod(
 
     if (isTRUE(verbose)) {
       message(' - Including missing features')
+      if (!is.null(count_info_column)) {
+        wrap_msg(' - *Including', paste0('\'', count_info_column, '\''), 'col in output.
+                 Please make sure to include as count_info_param for overlapToMatrix()')
+      }
     }
-
 
 
     # 4.2 dbvect write in any missing features
