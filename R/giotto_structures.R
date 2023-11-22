@@ -1,6 +1,17 @@
 
 #' @name calculateOverlap
 #' @title Calculate polygon overlapped features
+#' @param x Data to overlap with (ex: polygons)
+#' @param y Data to overlap (ex: points)
+#' @param n_per_chunk how many elements in x to consider per spatial chunk
+#' @param remote_name name of table to create from overlap results
+#' @param poly_subset_ids ids to use to subset polys to overlap
+#' @param feat_subset_column subset feats to overlap based on this attribute
+#' @param feat_subset_ids value within feat_subset_column to flag as a feature
+#' to be used in overlap
+#' @param overwrite whether to overwrite if table already exists
+#' @param verbose be verbose
+#' @param \dots additional params to pass
 #' @export
 setMethod(
   'calculateOverlap', signature(x = 'dbSpatProxyData', y = 'dbSpatProxyData'),
@@ -12,12 +23,18 @@ setMethod(
     feat_subset_column = NULL,
     feat_subset_ids = NULL,
     count_info_column = NULL,
+    overwrite = FALSE,
     verbose = TRUE,
     ...
   )
   {
     x <- reconnect(x)
     y <- reconnect(y)
+    p <- cPool(x)
+
+    # needs to be overwritten here instead of in a write function ... param
+    # because the write function is written to a temp table.
+    overwrite_handler(p = p, remote_name = remote_name, overwrite = overwrite)
 
     # 1. perform poly and feat subsets if necessary #
     # --------------------------------------------- #
@@ -53,7 +70,9 @@ setMethod(
       wrap_msg('Start chunked overlaps')
     }
 
-    chunk_out_name <- result_count() # use a new temp name
+
+
+    chunk_out_name <- result_count(p) # use a new temp name
 
     # 3. spatial chunking
     res <- chunkSpatApply(
@@ -118,11 +137,19 @@ setMethod(
     missing_pts <- which(!y$feat_ID_uniq %in% res$feat_ID_uniq)
     if (length(missing_pts) > 0L) {
 
+      last_uid <- res[] %>%
+        dplyr::summarise(max(.uID, na.rm = TRUE)) %>%
+        dplyr::pull()
+
+      missing_y <- y[missing_pts,][] %>% # find missing pts then drop to tbl
+        dplyr::mutate(.uID = dplyr::row_number() + !!last_uid)
+
       res[] <- res[] %>%
         dplyr::rows_insert(
-          y = y[missing_pts,][], # find missing pts then drop to tbl
+          y = missing_y,
           by = '.uID',
-          in_place = TRUE
+          in_place = TRUE,
+          conflict = 'ignore'
         )
 
       # missing_sv <- as.points(y[missing_pts,])

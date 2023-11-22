@@ -13,9 +13,32 @@
   feat_subset_column = NULL,
   feat_subset_ids = NULL,
   count_info_column = NULL,
+  overwrite = FALSE,
   verbose = TRUE,
   ...
 )
+}
+\arguments{
+\item{x}{Data to overlap with (ex: polygons)}
+
+\item{y}{Data to overlap (ex: points)}
+
+\item{n_per_chunk}{how many elements in x to consider per spatial chunk}
+
+\item{remote_name}{name of table to create from overlap results}
+
+\item{poly_subset_ids}{ids to use to subset polys to overlap}
+
+\item{feat_subset_column}{subset feats to overlap based on this attribute}
+
+\item{feat_subset_ids}{value within feat_subset_column to flag as a feature
+to be used in overlap}
+
+\item{overwrite}{whether to overwrite if table already exists}
+
+\item{verbose}{be verbose}
+
+\item{\dots}{additional params to pass}
 }
 \description{
 Calculate polygon overlapped features

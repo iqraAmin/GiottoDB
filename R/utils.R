@@ -263,13 +263,24 @@ file_extension = function(file)
 # https://stackoverflow.com/a/25902379
 #' @name result_count
 #' @title Create a counter
+#' @details
+#' A unique counter number can only be guaranteed when db param is supplied
+#'
+#' @param db db identifier (hash, pool, or path)
 #' @noRd
-result_count = function() {
+result_count = function(db = NULL) {
   count = getOption('gdb.res_count', 1L)
   options(gdb.res_count = (count + 1L))
-  paste0('gdb_', sprintf('%03d', count))
-}
+  res_id <- paste0('gdb_', sprintf('%03d', count))
 
+  if (!is.null(db)) {
+    # recursively check for a unused name
+    p <- evaluate_conn(db, mode = 'pool')
+    if (existsTableBE(p, res_id)) res_id <- result_count(db = db)
+  }
+
+  return(res_id)
+}
 
 
 
