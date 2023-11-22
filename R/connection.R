@@ -564,7 +564,7 @@ setMethod(
   .DB_ENV[[b_ID]]$pool <- con_pool
   .DB_ENV[[b_ID]]$info <- x
 
-  return(invisible())
+  return(invisible(b_ID))
 })
 
 
