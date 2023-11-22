@@ -34,6 +34,8 @@
 \item{feat_subset_ids}{value within feat_subset_column to flag as a feature
 to be used in overlap}
 
+\item{count_info_column}{column with count information (optional)}
+
 \item{overwrite}{whether to overwrite if table already exists}
 
 \item{verbose}{be verbose}

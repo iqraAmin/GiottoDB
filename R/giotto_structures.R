@@ -9,6 +9,7 @@
 #' @param feat_subset_column subset feats to overlap based on this attribute
 #' @param feat_subset_ids value within feat_subset_column to flag as a feature
 #' to be used in overlap
+#' @param count_info_column column with count information (optional)
 #' @param overwrite whether to overwrite if table already exists
 #' @param verbose be verbose
 #' @param \dots additional params to pass
@@ -74,7 +75,11 @@ setMethod(
 
     chunk_out_name <- result_count(p) # use a new temp name
 
-    # 3. spatial chunking
+    # drop the temp table when exiting
+    on.exit({dropTableBE(p, chunk_out_name)},
+            add = TRUE)
+
+    # 3. spatial chunking to temp table
     res <- chunkSpatApply(
       x = x,
       y = y,
@@ -109,7 +114,7 @@ setMethod(
       dplyr::mutate(flag_overlap = as.numeric(!is.na(poly_ID)) * 10L) %>%
       dplyr::mutate(flag_sum = flag_dup + flag_first + flag_overlap) %>%
       dplyr::filter(flag_sum == max(flag_sum, na.rm = TRUE)) %>%
-      dplyr::select(-flag_dup, -flag_overlap, -flag_first, -flag_sum) %>%
+      dplyr::select(x, y, poly_ID, feat_ID, feat_ID_uniq, !!count_info_column, .uID) %>%
       dplyr::ungroup() %>%
       dplyr::mutate(.uID = dplyr::row_number()) %>%
       dplyr::collapse()
@@ -142,7 +147,15 @@ setMethod(
         dplyr::pull()
 
       missing_y <- y[missing_pts,][] %>% # find missing pts then drop to tbl
-        dplyr::mutate(.uID = dplyr::row_number() + !!last_uid)
+        dplyr::mutate(poly_ID = NA) %>%
+        dplyr::mutate(.uID = dplyr::row_number() + !!last_uid) %>%
+        dplyr::select(poly_ID, feat_ID, feat_ID_uniq, !!count_info_column, .uID)
+
+
+      conn <- pool::poolCheckout(p)
+      on.exit(pool::poolReturn(conn), add = TRUE)
+      cPool(res) <- conn
+      cPool(missing_y) <- conn
 
       res[] <- res[] %>%
         dplyr::rows_insert(
@@ -151,6 +164,8 @@ setMethod(
           in_place = TRUE,
           conflict = 'ignore'
         )
+
+      cPool(res) <- p
 
       # missing_sv <- as.points(y[missing_pts,])
       # missing_sv <- missing_sv[, c('feat_ID', 'feat_ID_uniq')]
@@ -162,10 +177,6 @@ setMethod(
       #   return_object = FALSE
       # )
     }
-
-
-    # drop the temp table
-    dropTableBE(cPool(x), chunk_out_name)
 
     res@remote_name <- remote_name
 

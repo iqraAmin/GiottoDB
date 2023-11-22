@@ -156,6 +156,13 @@ chunkSpatApply <- function(x,
       # generated during the last chunk
 
       # update progress and return
+      # if (isTRUE(progress)) {
+      #   print(terra::plot( # spatplot progress
+      #     ext_list[not_empty][[chunk_i]],
+      #     add = TRUE,
+      #     col = 'lightgreen'
+      #   ))
+      # }
       pb()
     }
 
