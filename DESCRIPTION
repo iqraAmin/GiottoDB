@@ -32,7 +32,7 @@ Imports:
     dplyr,
     fs,
     GiottoClass,
-    GiottoUtils,
+    GiottoUtils (>= 0.0.0.9005),
     methods,
     pool,
     terra (>= 1.7),

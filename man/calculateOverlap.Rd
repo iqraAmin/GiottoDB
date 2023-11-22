@@ -14,7 +14,7 @@
   feat_subset_ids = NULL,
   count_info_column = NULL,
   overwrite = FALSE,
-  verbose = TRUE,
+  verbose = NULL,
   ...
 )
 }

@@ -25,13 +25,21 @@ setMethod(
     feat_subset_ids = NULL,
     count_info_column = NULL,
     overwrite = FALSE,
-    verbose = TRUE,
+    verbose = NULL,
     ...
   )
   {
     x <- reconnect(x)
     y <- reconnect(y)
     p <- cPool(x)
+
+    if (!is.null(count_info_column)) {
+      checkmate::assert_character(count_info_column)
+      if (!count_info_column %in% colnames(y)) {
+        stop(wrap_txt(paste0('count_info_column \'', count_info_column, '\''),
+                      'not discovered in \'y\'', errWidth = TRUE))
+      }
+    }
 
     # needs to be overwritten here instead of in a write function ... param
     # because the write function is written to a temp table.
@@ -63,14 +71,11 @@ setMethod(
 
     chunk_fun = function(x, y) {
       GiottoClass::calculateOverlap(
-        x, y, verbose = FALSE, ...
+        x, y, verbose = FALSE, count_info_column = count_info_column, ...
       )
     }
 
-    if (isTRUE(verbose)) {
-      wrap_msg('Start chunked overlaps')
-    }
-
+    vmsg('Start chunked overlaps', .v = verbose)
 
 
     chunk_out_name <- result_count(p) # use a new temp name
@@ -89,17 +94,19 @@ setMethod(
       fun = chunk_fun
     )
 
-    if (isTRUE(verbose)) {
-      wrap_msg('Finish chunked overlaps')
-    }
+    vmsg('Finish chunked overlaps', .v = verbose)
 
     # 4. output cleanup #
     # ----------------- #
 
-    if (isTRUE(verbose)) {
-      message('Running cleanups')
-      message(' - Cleanup overlap doublecounts')
-    }
+    vmsg('Running cleanups
+         - Cleanup overlap doublecounts',
+         .v = verbose)
+
+    vmsg('=> existing cols:
+         ', colnames(res[]),
+         .is_debug = TRUE,
+         .v = verbose)
 
     # 4.1 cleanup doublecounts
     # strategy:
@@ -120,10 +127,7 @@ setMethod(
       dplyr::collapse()
 
 
-
-    if (isTRUE(verbose)) {
-      message(' - Compute to permanent')
-    }
+    vmsg('- Compute to permanent', .initial = ' ', .v = verbose)
 
     # this is a lot of stacked queries and the output tends to be very slow.
     # We will write this out as the final table to return
@@ -132,12 +136,14 @@ setMethod(
                      name = remote_name,
                      unique_indexes = list('.uID')) # key on .uID
 
-    if (isTRUE(verbose)) {
-      message(' - Including missing features')
-      if (!is.null(count_info_column)) {
-        wrap_msg(' - *Including', paste0('\'', count_info_column, '\''), 'col in output.
-                 Please make sure to include as count_info_param for overlapToMatrix()')
-      }
+    vmsg('- Including missing features', .initial = ' ', .v = verbose)
+    if (!is.null(count_info_column)) {
+      vmsg(
+        '- *Including', paste0('\'', count_info_column, '\''), 'col in output.
+        Please make sure to include as count_info_param for overlapToMatrix()',
+        .initial = ' ',
+        .v = verbose
+      )
     }
 
 
