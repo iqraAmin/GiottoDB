@@ -35,7 +35,7 @@ setMethod(
 
     if (!is.null(count_info_column)) {
       checkmate::assert_character(count_info_column)
-      if (!count_info_column %in% colnames(y)) {
+      if (!count_info_column %in% colnames(y[])) {
         stop(wrap_txt(paste0('count_info_column \'', count_info_column, '\''),
                       'not discovered in \'y\'', errWidth = TRUE))
       }
