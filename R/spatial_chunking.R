@@ -123,6 +123,7 @@ chunkSpatApply <- function(x,
       # convert x (and y if given) to terra
       # run function on x, and conditionally, y
       chunk_x = as.spatvector(chunk_x_list[[chunk_i]])
+      if (nrow(chunk_x) == 0L) next # skip chunk if x input is length 0
       chunk_output = if(is.null(chunk_y_input)) {
         # x only
         fun(x = chunk_x)
@@ -130,12 +131,12 @@ chunkSpatApply <- function(x,
         # x and y
         if(!inherits(chunk_y_input, 'list')) {
           # single y
-          fun(x = chunk_x,
-              y = chunk_y_input)
+          fun(x = chunk_x, y = chunk_y_input)
         } else {
           # chunked y values
-          fun(x = chunk_x,
-              y = as.spatvector(chunk_y_input[[chunk_i]]))
+          chunk_y <- as.spatvector(chunk_y_input[[chunk_i]])
+          if (nrow(chunk_y) == 0L) next # skip chunk if y input is length 0
+          fun(x = chunk_x, y = chunk_y)
         }
       }
 
