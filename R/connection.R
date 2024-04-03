@@ -540,7 +540,7 @@ setMethod(
   b_ID = backendID(x)
   # if already valid, exit
   try_val = try(DBI::dbIsValid(.DB_ENV[[b_ID]]$pool), silent = TRUE)
-  if(isTRUE(try_val)) return(invisible())
+  if(isTRUE(try_val)) return(invisible(b_ID))
 
 
   # assemble params
