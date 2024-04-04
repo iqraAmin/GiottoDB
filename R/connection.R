@@ -538,9 +538,12 @@ setMethod(
   function(x, with_login = FALSE, verbose = TRUE, ...)
 {
   b_ID = backendID(x)
+  p <- .DB_ENV[[b_ID]]$pool
   # if already valid, exit
-  try_val = try(DBI::dbIsValid(.DB_ENV[[b_ID]]$pool), silent = TRUE)
-  if(isTRUE(try_val)) return(invisible(b_ID))
+  try_val = try(DBI::dbIsValid(p), silent = TRUE)
+  # updated for changes in how pool is behaving where it is valid, but
+  # can have no available handles
+  if(isTRUE(try_val) && p$counters$free > 0) return(invisible(b_ID))
 
 
   # assemble params
