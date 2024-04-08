@@ -12,4 +12,4 @@ test_that('queryStack<- replaces query info from dbDataFrame', {
 })
 
 
-dbDF = disconnect(dbDF)
+dbDF = dbBackendClose(dbDF)

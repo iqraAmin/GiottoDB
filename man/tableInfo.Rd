@@ -25,12 +25,12 @@ a data.table of information about the specified table on the database
 Get information about the database table
 }
 \examples{
-dbpoly = simulate_dbPolygonProxy()
+dbpoly = sim_dbPolygonProxy()
 tableInfo(dbpoly)
 
-dbpoints = simulate_dbPointsProxy()
+dbpoints = sim_dbPointsProxy()
 tableInfo(dbpoints)
 
-dbDF = simulate_dbDataFrame()
+dbDF = sim_dbDataFrame()
 tableInfo(dbDF)
 }

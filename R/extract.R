@@ -31,7 +31,7 @@ setMethod('[<-', signature(x = 'dbData', i = 'missing', j = 'missing', value = '
 setMethod(
   '[', signature(x = 'dbDataFrame', i = 'gdbIndex', j = 'missing', drop = 'ANY'),
   function(x, i, ..., drop = FALSE) {
-    x = reconnect(x)
+    x = .reconnect(x)
     if(any(is.na(x@key))) stopf('Set dbDataFrame key with `keyCol()` to subset on \'i\'')
 
     # numerics and logical
@@ -57,7 +57,7 @@ setMethod(
 #' @export
 setMethod('[', signature(x = 'dbDataFrame', i = 'missing', j = 'gdbIndex', drop = 'ANY'),
           function(x, j, ..., drop = FALSE) {
-            x = reconnect(x)
+            x = .reconnect(x)
             checkmate::assert_logical(drop)
 
             if(is.logical(j)) j = which(j)
@@ -68,7 +68,7 @@ setMethod('[', signature(x = 'dbDataFrame', i = 'missing', j = 'gdbIndex', drop 
 #' @export
 setMethod('[', signature(x = 'dbDataFrame', i = 'gdbIndex', j = 'gdbIndex', drop = 'ANY'),
           function(x, i, j, ..., drop = FALSE) {
-            x = reconnect(x)
+            x = .reconnect(x)
             x = x[i,]
             x = x[, j]
             x
@@ -114,7 +114,7 @@ flex_window_order = function(x, order_cols) {
 setMethod(
   '[', signature(x = 'dbPolygonProxy', i = 'character', j = 'missing', drop = 'ANY'),
   function(x, i, ..., drop = FALSE) {
-    x = reconnect(x)
+    x = .reconnect(x)
     x@attributes@data = x@attributes@data %>%
       dplyr::select(i)
     x
@@ -125,7 +125,7 @@ setMethod(
 setMethod(
   '[', signature(x = 'dbPointsProxy', i = 'character', j = 'missing', drop = 'ANY'),
   function(x, i, ..., drop = FALSE) {
-    x = reconnect(x)
+    x = .reconnect(x)
     x@data = x@data %>%
       dplyr::select(c(.uID, x, y, i))
     x
@@ -137,7 +137,7 @@ setMethod(
 setMethod(
   '[', signature(x = 'dbPointsProxy', i = 'numeric', j = 'missing', drop = 'ANY'),
   function(x, i, ..., drop = FALSE) {
-    x = reconnect(x)
+    x = .reconnect(x)
     x@data = x@data %>%
       dplyr::filter(.uID %in% i)
     x
@@ -148,7 +148,7 @@ setMethod(
 setMethod(
   '[', signature(x = 'dbPointsProxy', i = 'logical', j = 'missing', drop = 'ANY'),
   function(x, i, ..., drop = FALSE) {
-    x = reconnect(x)
+    x = .reconnect(x)
     uIDs = x@data %>%
       dplyr::pull(.uID)
     bool_vect = uIDs[i]
@@ -162,7 +162,7 @@ setMethod(
 setMethod(
   '[', signature(x = 'dbPolygonProxy', i = 'numeric', j = 'missing', drop = 'ANY'),
   function(x, i, ..., drop = FALSE) {
-    x <- reconnect(x)
+    x <- .reconnect(x)
     x@data <- x@data %>%
       dplyr::filter(geom %in% i)
     x@attributes[] <- x@attributes[] %>%
@@ -175,7 +175,7 @@ setMethod(
 setMethod(
   '[', signature(x = 'dbPolygonProxy', i = 'logical', j = 'missing', drop = 'ANY'),
   function(x, i, ..., drop = FALSE) {
-    x <- reconnect(x)
+    x <- .reconnect(x)
     geomIDs <- x@attributes[] %>%
       dplyr::pull(geom)
     bool_vect <- geomIDs[i]
@@ -193,7 +193,7 @@ setMethod(
 setMethod(
   '[', signature(x = 'dbPolygonProxy', i = 'missing', j = 'character', drop = 'ANY'),
   function(x, j, ..., drop = FALSE) {
-    x = reconnect(x)
+    x = .reconnect(x)
     x@attributes@data = x@attributes@data %>%
       dplyr::select(c(geom, dplyr::all_of(j)))
     x
@@ -204,7 +204,7 @@ setMethod(
 setMethod(
   '[', signature(x = 'dbPolygonProxy', i = 'missing', j = 'numeric', drop = 'ANY'),
   function(x, j, ..., drop = FALSE) {
-    x = reconnect(x)
+    x = .reconnect(x)
     sel_cols = names(x)[j]
     x@attributes@data = x@attributes@data %>%
       dplyr::select(c(geom, dplyr::all_of(sel_cols)))
@@ -216,7 +216,7 @@ setMethod(
 setMethod(
   '[', signature(x = 'dbPolygonProxy', i = 'missing', j = 'character', drop = 'ANY'),
   function(x, j, ..., drop = FALSE) {
-    x = reconnect(x)
+    x = .reconnect(x)
     sel_cols = names(x)[j]
     x@attributes@data = x@attributes@data %>%
       dplyr::select(c(geom, dplyr::all_of(sel_cols)))
@@ -228,7 +228,7 @@ setMethod(
 setMethod(
   '[', signature(x = 'dbPointsProxy', i = 'missing', j = 'character', drop = 'ANY'),
   function(x, j, ..., drop = FALSE) {
-    x = reconnect(x)
+    x = .reconnect(x)
     x@data = x@data %>%
       dplyr::select(c(.uID, x, y, dplyr::all_of(j)))
     x
@@ -240,7 +240,7 @@ setMethod(
 setMethod(
   '[', signature(x = 'dbPointsProxy', i = 'missing', j = 'numeric', drop = 'ANY'),
   function(x, j, ..., drop = FALSE) {
-    x = reconnect(x)
+    x = .reconnect(x)
     sel_cols = names(x)[j]
     x@data = x@data %>%
       dplyr::select(.uID, x, y, dplyr::all_of(sel_cols))
@@ -252,7 +252,7 @@ setMethod(
 setMethod(
   '[', signature(x = 'dbPointsProxy', i = 'missing', j = 'logical', drop = 'ANY'),
   function(x, j, ..., drop = FALSE) {
-    x = reconnect(x)
+    x = .reconnect(x)
     sel_cols = names(x)[j]
     x@data = x@data %>%
       dplyr::select(.uID, x, y, dplyr::all_of(sel_cols))
@@ -268,7 +268,7 @@ setMethod(
 setMethod(
   '[', signature(x = 'dbSpatProxyData', i = 'gdbIndexNonChar', j = 'gdbIndex', drop = 'ANY'),
   function(x, i, j, ..., drop = FALSE) {
-    x = reconnect(x)
+    x = .reconnect(x)
     x = x[, j, ..., drop]
     x = x[i, , ..., drop]
     x
@@ -279,15 +279,16 @@ setMethod(
 
 ## $ ####
 
+#' @rdname hidden_aliases
 setMethod('$', signature('dbPointsProxy'), function(x, name) {
-  x <- reconnect(x)
+  x <- .reconnect(x)
   x[] %>%
     dplyr::arrange(.uID) %>%
     dplyr::pull(!!name)
 })
-
+#' @rdname hidden_aliases
 setMethod('$', signature('dbPolygonProxy'), function(x, name) {
-  x <- reconnect(x)
+  x <- .reconnect(x)
   x@attributes[] %>%
     dplyr::arrange(geom) %>%
     dplyr::pull(!!name)
@@ -296,7 +297,7 @@ setMethod('$', signature('dbPolygonProxy'), function(x, name) {
 ## $<- ####
 #
 # setMethod('$<-', signature('dbPointsProxy'), function(x, name, value) {
-#   x <- reconnect(x)
+#   x <- .reconnect(x)
 #   p = cPool(x)
 #   conn <- evaluate_conn(p, mode = 'conn')
 #   on.exit(pool::poolReturn(conn), add = TRUE)

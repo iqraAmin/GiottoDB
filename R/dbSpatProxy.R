@@ -335,14 +335,14 @@ createDBPointsProxy = function(SpatVector,
 #' @export
 setMethod('values', signature(x = 'dbPolygonProxy'),
           function(x, ...) {
-            x = reconnect(x)
+            x = .reconnect(x)
             x@attributes
           })
 #' @rdname hidden_aliases
 #' @export
 setMethod('values', signature(x = 'dbPointsProxy'),
           function(x, ...) {
-            x = reconnect(x)
+            x = .reconnect(x)
             x@data %>%
               dplyr::select(-c('x', 'y'))
           })
@@ -568,17 +568,24 @@ setMethod('crop', signature(x = 'dbSpatProxyData', y = 'SpatExtent'),
 #' @param by_geom,by_value dplyr/dbplyr function to manipulate the data with
 #' across either the geometry OR value data.
 #' @examples
-#' dbPoly <- simulate_dbPolygonProxy()
-#' dbPoly_filtered <- filter_dbspat(x = dbpoly,
-#'                                  by_value = function(dbspd) {
-#'                                    dplyr::filter(dbspd, poly_ID == '101161259912191124732236989250178928032')
-#'                                  })
-#' dbPoly_filtered
-#' dbPoly_filtered <- filter_dbspat(x = dbpoly,
-#'                                  by_geom = function(dbspd) {
-#'                                    dbspd %>% dplyr::filter(x > 6500)
-#'                                  })
-#' dbPoly_filtered
+#' # This is an internal, so example should not be run
+#' \dontrun{
+#' dbpoly <- sim_dbPolygonProxy()
+#' dbpoly_filtered <- filter_dbspat(
+#'   x = dbpoly,
+#'   by_value = function(dbspd) {
+#'     dplyr::filter(dbspd, poly_ID == '101161259912191124732236989250178928032')
+#'   }
+#' )
+#' dbpoly_filtered
+#' dbpoly_filtered <- filter_dbspat(
+#'   x = dbpoly,
+#'   by_geom = function(dbspd) {
+#'     dbspd %>% dplyr::filter(x > 6500)
+#'   }
+#' )
+#' dbpoly_filtered
+#' }
 #' @keywords internal
 setMethod( # FOR POLY GEOM
   'filter_dbspat',
@@ -747,21 +754,6 @@ sv_lapply_parallel = function(X,
   do.call(rbind, out)
 }
 
-
-
-
-
-#' EXPERIMENTAL
-#' Chunk an operation by spatially tiling a dbSpatVectorProxy. The tiles are
-#' pulled into memory in parallel processes where they are then run. Results
-#' are then either returned
-# dbspat_tile_lapply_parallel = function() {
-#
-# }
-
-
-#' EXPERIMENTAL
-#' Chunk an operation by splitting a
 
 
 

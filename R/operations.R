@@ -7,7 +7,7 @@
 #' @rdname hidden_aliases
 #' @export
 setMethod('t', signature(x = 'dbPointsProxy'), function(x) {
-  x = reconnect(x)
+  x = .reconnect(x)
   x@data = x@data %>% dplyr::select(x = y, y = x, dplyr::everything())
   e = x@extent
   x@extent = terra::ext(e$ymin, e$ymax, e$xmin, e$xmax)
@@ -17,7 +17,7 @@ setMethod('t', signature(x = 'dbPointsProxy'), function(x) {
 #' @rdname hidden_aliases
 #' @export
 setMethod('t', signature(x = 'dbPolygonProxy'), function(x) {
-  x = reconnect(x)
+  x = .reconnect(x)
   x@data = x@data %>% dplyr::select(geom, part, x = y, y = x, hole)
   e = x@extent
   x@extent = terra::ext(e$ymin, e$ymax, e$xmin, e$xmax)
@@ -39,21 +39,21 @@ NULL
 #' @rdname hidden_aliases
 #' @export
 setMethod('nrow', signature(x = 'dbDataFrame'), function(x) {
-  x = reconnect(x)
+  x = .reconnect(x)
   dim(x)[1L]
 })
 
 #' @rdname hidden_aliases
 #' @export
 setMethod('nrow', signature(x = 'dbPointsProxy'), function(x) {
-  x = reconnect(x)
+  x = .reconnect(x)
   dim(x)[1L]
 })
 
 #' @rdname hidden_aliases
 #' @export
 setMethod('nrow', signature(x = 'dbPolygonProxy'), function(x) {
-  x = reconnect(x)
+  x = .reconnect(x)
   dim(x@attributes)[1L]
 })
 
@@ -63,28 +63,28 @@ setMethod('nrow', signature(x = 'dbPolygonProxy'), function(x) {
 #' @rdname hidden_aliases
 #' @export
 setMethod('ncol', signature(x = 'dbDataFrame'), function(x) {
-  x = reconnect(x)
+  x = .reconnect(x)
   ncol(x@data)
 })
 
 #' @rdname hidden_aliases
 #' @export
 setMethod('ncol', signature(x = 'dbPointsProxy'), function(x) {
-  x = reconnect(x)
+  x = .reconnect(x)
   ncol(x@data) - 3L # remove 3 for .uID,  x, and y cols
 })
 
 #' @rdname hidden_aliases
 #' @export
 setMethod('ncol', signature(x = 'dbPolygonProxy'), function(x) {
-  x = reconnect(x)
+  x = .reconnect(x)
   ncol(x@attributes@data) - 1L # remote one for geom col in attrs
 })
 
 #' @rdname hidden_aliases
 #' @export
 setMethod('ncol', signature(x = 'dbDataFrame'), function(x) {
-  x = reconnect(x)
+  x = .reconnect(x)
   ncol(x@data)
 })
 
@@ -93,7 +93,7 @@ setMethod('ncol', signature(x = 'dbDataFrame'), function(x) {
 #' @rdname hidden_aliases
 #' @export
 setMethod('dim', signature('dbData'), function(x) {
-  x = reconnect(x)
+  x = .reconnect(x)
   nr = x@data %>%
     dplyr::summarise(n()) %>%
     dplyr::pull() %>%
@@ -127,7 +127,7 @@ setMethod('length', signature('dbSpatProxyData'), function(x) {
 
 #' @export
 setMethod('head', signature(x = 'dbDataFrame'), function(x, n = 6L, ...) {
-  x = reconnect(x)
+  x = .reconnect(x)
 
   x[] = x[] %in% head(x, n = n)
   x
@@ -137,7 +137,7 @@ setMethod('head', signature(x = 'dbDataFrame'), function(x, n = 6L, ...) {
 
 #' @export
 setMethod('tail', signature(x = 'dbDataFrame'), function(x, n = 6L, ...) {
-  x = reconnect(x)
+  x = .reconnect(x)
 
   x[] = x[] %in% tail(x, n = n)
   x
@@ -145,7 +145,7 @@ setMethod('tail', signature(x = 'dbDataFrame'), function(x, n = 6L, ...) {
 
 # Column data types ####
 # Due to how these functions will be commonly seen within other functions, a
-# call to `reconnect()` is omitted.
+# call to `.reconnect()` is omitted.
 
 ## colTypes ####
 

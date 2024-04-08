@@ -161,7 +161,7 @@ compute_temporary = function(x, p, fnq, ...) {
 setMethod('create_index', signature(x = 'dbData', name = 'character',
                                     column = 'character', unique = 'logical'),
           function(x, name, column, unique = FALSE, ...) {
-            x = reconnect(x)
+            x = .reconnect(x)
             p = cPool(x)
             q = lapply(list(name = name, remote = remoteName(x), col = column),
                        function(ids) DBI::dbQuoteIdentifier(p, ids))
@@ -250,13 +250,13 @@ get_full_table_name_quoted = function(conn, remote_name) {
 #' @param remote_name (only needed if x is a connection object) name of table on DB
 #' @return a data.table of information about the specified table on the database
 #' @examples
-#' dbpoly = simulate_dbPolygonProxy()
+#' dbpoly = sim_dbPolygonProxy()
 #' tableInfo(dbpoly)
 #'
-#' dbpoints = simulate_dbPointsProxy()
+#' dbpoints = sim_dbPointsProxy()
 #' tableInfo(dbpoints)
 #'
-#' dbDF = simulate_dbDataFrame()
+#' dbDF = sim_dbDataFrame()
 #' tableInfo(dbDF)
 #' @export
 setMethod('tableInfo', signature(x = 'ANY', remote_name = 'character'),

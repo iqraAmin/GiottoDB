@@ -11,7 +11,7 @@
 
   reg.finalizer(
     e = .DB_ENV,
-    f = closeBackend,
+    f = dbBackendClose,
     onexit = TRUE
   )
 }
@@ -20,6 +20,6 @@
 #' @keywords internal
 #' @noRd
 .onUnload = function(libpath) {
-  closeBackend()
+  dbBackendClose()
 }
 

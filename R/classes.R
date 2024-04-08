@@ -51,6 +51,39 @@ setClass('dbData',
 
 # Backend specific ####
 
+abbrev_path <- function(path, head = 15, tail = 35L) {
+  nch <- nchar(path)
+  if (nch > 60L) {
+    p1 <- substring(path, first = 0L, last = head)
+    p2 <- substring(path, first = nch - tail, last = nch)
+    path <- paste0(p1, "[...]", p2)
+  }
+  return(path)
+}
+
+setClass("gdbBackendID", contains = "character")
+
+setClass("gdbBackend", contains = "list")
+
+setMethod("print", signature("gdbBackend"), function(x, ...) show(x))
+
+setMethod("show", signature("gdbBackend"), function(object) {
+  fields <- c("factory", "path", "id", "valid")
+  pre <- sprintf("%s :", format(fields))
+  names(pre) <- fields
+  p <- object$info@db_path
+  p <- abbrev_path(p)
+  f <- sprintf("`%s`", object$info@driver_call)
+  id <- object$info@hash
+  v <- pool::dbIsValid(object$pool)
+
+  cat(sprintf("GiottoDB <%s>\n", class(object)))
+  cat(pre["id"], id, "\n")
+  cat(pre["path"], p,"\n")
+  cat(pre["factory"], f,"\n")
+  cat(pre["valid"], v,"\n")
+})
+
 ## backendInfo ####
 #' @name backendInfo
 #' @title backendInfo

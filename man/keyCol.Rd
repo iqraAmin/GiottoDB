@@ -20,7 +20,7 @@ More than one column can be set at the same time, which will sort the table
 by multiple columns (ascending), starting with the first specified.
 }
 \examples{
-d <- simulate_dbDataFrame()
+d <- sim_dbDataFrame()
 keyCol(d) <- c('Sepal.Length', 'Sepal.Width')
 d[1:6,]
 }

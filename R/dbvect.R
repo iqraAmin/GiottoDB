@@ -22,7 +22,7 @@ NULL
 #' @param \dots additional params to pass to table creation and `stream_to_db`
 #' @examples
 #' \dontrun{
-#' createBackend()
+#' dbBackend()
 #' ### SpatVector from file
 #' f <- system.file("ex/lux.shp", package="terra")
 #' f

@@ -60,13 +60,13 @@ dplyr_set_colnames_dbpolyproxy = function(x, value) {
 #' @rdname hidden_aliases
 #' @export
 setMethod('names', signature(x = 'dbDataFrame'), function(x) {
-  x = reconnect(x)
+  x = .reconnect(x)
   colnames(x)
 })
 #' @rdname hidden_aliases
 #' @export
 setMethod('names<-', signature(x = 'dbDataFrame', value = 'gdbIndex'), function(x, value) {
-  x = reconnect(x)
+  x = .reconnect(x)
   dplyr_set_colnames(x, value = as.character(value))
 })
 
@@ -75,14 +75,14 @@ setMethod('names<-', signature(x = 'dbDataFrame', value = 'gdbIndex'), function(
 #' @rdname hidden_aliases
 #' @export
 setMethod('names', signature(x = 'dbPolygonProxy'), function(x) {
-  x = reconnect(x)
+  x = .reconnect(x)
   full_names = (names(x@attributes))
   full_names[-which(full_names == 'geom')]
 })
 #' @rdname hidden_aliases
 #' @export
 setMethod('names<-', signature(x = 'dbPolygonProxy', value = 'gdbIndex'), function(x, value) {
-  x = reconnect(x)
+  x = .reconnect(x)
   dplyr_set_colnames_dbpolyproxy(x, value = as.character(value))
 })
 
@@ -91,14 +91,14 @@ setMethod('names<-', signature(x = 'dbPolygonProxy', value = 'gdbIndex'), functi
 #' @rdname hidden_aliases
 #' @export
 setMethod('names', signature(x = 'dbPointsProxy'), function(x) {
-  x = reconnect(x)
+  x = .reconnect(x)
   full_names = names(x@data)
   full_names[-which(full_names %in% c('.uID', 'x', 'y'))]
 })
 #' @rdname hidden_aliases
 #' @export
 setMethod('names<-', signature(x = 'dbPointsProxy', value = 'gdbIndex'), function(x, value) {
-  x = reconnect(x)
+  x = .reconnect(x)
   dplyr_set_colnames_dbpointproxy(x, value = as.character(value))
 })
 
@@ -113,7 +113,7 @@ setMethod('names<-', signature(x = 'dbPointsProxy', value = 'gdbIndex'), functio
 #' @rdname hidden_aliases
 #' @export
 setMethod('rownames', signature(x = 'dbData'), function(x) {
-  x = reconnect(x)
+  x = .reconnect(x)
   rownames(x@data)
 })
 
@@ -123,14 +123,14 @@ setMethod('rownames', signature(x = 'dbData'), function(x) {
 #' @rdname hidden_aliases
 #' @export
 setMethod('colnames', signature(x = 'dbData'), function(x) {
-  x = reconnect(x)
+  x = .reconnect(x)
   colnames(x@data)
 })
 
 #' @rdname hidden_aliases
 #' @export
 setMethod('colnames<-', signature(x = 'dbDataFrame', value = 'gdbIndex'), function(x, value) {
-  x = reconnect(x)
+  x = .reconnect(x)
   dplyr_set_colnames(x = x, value = as.character(value))
 })
 
@@ -141,13 +141,13 @@ setMethod('colnames<-', signature(x = 'dbDataFrame', value = 'gdbIndex'), functi
 #' @rdname hidden_aliases
 #' @export
 setMethod('dimnames', signature(x = 'dbDataFrame'), function(x) {
-  x = reconnect(x)
+  x = .reconnect(x)
   dimnames(x[])
 })
 #' @rdname hidden_aliases
 #' @export
 setMethod('dimnames<-', signature(x = 'dbDataFrame', value = 'list'), function(x, value) {
-  x = reconnect(x)
+  x = .reconnect(x)
   x = dplyr_set_colnames(x, value = as.character(value[[2]]))
   x
 })

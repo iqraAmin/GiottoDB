@@ -15,7 +15,7 @@ To solve this issue, *GiottoDB* creates a backend as a centralized location from
 The first step is to create a *GiottoDB* backend. The database type to use is decided through a database driver passed to `drv` param. It defaults to `duckdb::duckdb()`. The location of the database file to generate is also decided at this step through the param `dbdir`. The default value is ":temp:" which is treated as a special token input that is a stand-in for `tempdir()`.
 
 ```         
-bID = createBackend()
+bID = dbBackend()
 bID # hash ID value for the database file
 ```
 
@@ -56,7 +56,7 @@ p = evaluate_conn(tempdir())
 
 Functions for interacting with the backend and also table management.
 
--   `validBE()` check if backend exists and has a valid connection
+-   `dbIsValid()` check if backend exists and has a valid connection
 
 -   `listTablesBE()` list tables in the backend
 
@@ -74,7 +74,7 @@ $~$
 
 #### 2. Closing and reconnecting the backend
 
-A specified backend can be closed by using `closeBackend()` along with a specific backend ID. Omitting any IDs will close all current GiottoDB backends.
+A specified backend can be closed by using `dbBackendClose()` along with a specific backend ID. Omitting any IDs will close all current GiottoDB backends.
 
 Backend closing is typically not necessary to be manually run. All backends and associated connections will be finalized at session close.
 
@@ -83,16 +83,16 @@ Backend closing is typically not necessary to be manually run. All backends and 
 bInfo = getBackendInfo(bID)
 
 p # still valid
-closeBackend(bID)
+dbBackendClose(bID)
 p # now invalid 
 ```
 
 *GiottoDB* data objects request new pool connections to the database from the backend when the connections are closed or otherwise become invalid.
 
-When the backend itself is closed, the user must reconnect the backend. Reconnections to an existing backend can be performed using the associated `backendInfo` object using `reconnectBackend()`. Alternatively, `createBackend()` can be called again with the same parameters to regenerate it (no overwriting or deletion will happen).
+When the backend itself is closed, the user must reconnect the backend. Reconnections to an existing backend can be performed using the associated `backendInfo` object using `dbBackend()`. Alternatively, `dbBackend()` can be called again with the same parameters to regenerate it (no overwriting or deletion will happen).
 
 ```         
-reconnectBackend()
+dbBackend()
 p = getBackendPool(bID)
 p # new valid pool connection
 ```
@@ -170,4 +170,4 @@ dbData objects respond to several functions for accessing each of the slots and 
 
 -   `disconnect()` disconnect the backend that the object is associated with
 
--   `reconnect()` reconnect the object to the backend if its `pool` object is no longer valid
+-   `.reconnect()` reconnect the object to the backend if its `pool` object is no longer valid

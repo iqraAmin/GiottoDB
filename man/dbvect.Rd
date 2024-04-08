@@ -89,7 +89,7 @@ Create an S4 dbPointsProxy object
 }
 \examples{
 \dontrun{
-createBackend()
+dbBackend()
 ### SpatVector from file
 f <- system.file("ex/lux.shp", package="terra")
 f

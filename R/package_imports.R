@@ -1,4 +1,3 @@
-
 #' @importClassesFrom terra SpatExtent
 #' @import GiottoUtils
 #' @importFrom terra plot
@@ -8,10 +7,11 @@
 #' @importMethodsFrom terra query
 #' @importMethodsFrom terra ext ext<-
 #' @importMethodsFrom GiottoClass calculateOverlap createGiottoPoints createGiottoPolygon overlapToMatrix
-#' @importFrom methods as callNextMethod initialize new slot slot<- validObject setAs
+#' @importFrom methods as callNextMethod initialize new slot slot<- validObject setAs show
 #' @importFrom utils capture.output flush.console
 #' @importFrom graphics par rect
 #' @importFrom pool Pool
 #' @importFrom data.table ":="
+#' @importFrom DBI dbIsValid
 NULL
 

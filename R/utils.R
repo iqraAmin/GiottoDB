@@ -114,8 +114,9 @@ getDBPath = function(path = ':temp:', extension = '.duckdb') {
   stopifnot(is.character(path))
   if(path == ':memory:') return(path)
   parent = switch(path,
-                  ':temp:' = tempdir(),
-                  path)
+    ':temp:' = tempdir(),
+    path
+  )
   parent = normalizePath(parent, mustWork = FALSE)
 
   if(!basename(parent) == paste0('giotto_backend', extension)) {
@@ -140,12 +141,12 @@ getDBPath = function(path = ':temp:', extension = '.duckdb') {
 
 # DB size
 
-#' @name backendSize
+#' @name dbBackendSize
 #' @title Size of backend database
 #' @description Given a backend ID, find the current size of the DB backend file
 #' @param backend_ID backend ID
 #' @export
-backendSize = function(backend_ID) {
+dbBackendSize = function(backend_ID) {
   dbdir = getBackendPath(backend_ID)
   file.size(dbdir)
 }
@@ -220,8 +221,10 @@ getBackendID = function(path = ':temp:', extension = '.duckdb') {
 #' @keywords internal
 #' @noRd
 calculate_backend_id = function(path) {
-  hash = calculate_hash(path)
-  return(paste0('ID_', hash))
+  hash <- calculate_hash(path)
+  id <- paste0("ID_", hash)
+  id <- new("gdbBackendID", .Data = id)
+  return(id)
 }
 
 

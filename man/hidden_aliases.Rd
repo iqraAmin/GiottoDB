@@ -24,6 +24,8 @@
 \alias{[,dbPointsProxy,missing,numeric,ANY-method}
 \alias{[,dbPointsProxy,missing,logical,ANY-method}
 \alias{[,dbSpatProxyData,gdbIndexNonChar,gdbIndex,ANY-method}
+\alias{$,dbPointsProxy-method}
+\alias{$,dbPolygonProxy-method}
 \alias{values,dbPolygonProxy-method}
 \alias{values,dbPointsProxy-method}
 \alias{hidden_aliases}
@@ -98,6 +100,10 @@
 \S4method{[}{dbPointsProxy,missing,logical,ANY}(x, i, j, ..., drop = TRUE)
 
 \S4method{[}{dbSpatProxyData,gdbIndexNonChar,gdbIndex,ANY}(x, i, j, ..., drop = FALSE)
+
+\S4method{$}{dbPointsProxy}(x, name)
+
+\S4method{$}{dbPolygonProxy}(x, name)
 
 \S4method{values}{dbPolygonProxy}(x, ...)
 

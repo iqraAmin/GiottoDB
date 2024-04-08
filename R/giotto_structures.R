@@ -29,8 +29,8 @@ setMethod(
     ...
   )
   {
-    x <- reconnect(x)
-    y <- reconnect(y)
+    x <- .reconnect(x)
+    y <- .reconnect(y)
     p <- cPool(x)
 
     if (!is.null(count_info_column)) {
@@ -246,7 +246,7 @@ setMethod(
     ...
   )
   {
-    x <- reconnect(x)
+    x <- .reconnect(x)
     output = match.arg(toupper(output), choices = c('HDF5ARRAY'))
     if (!is.null(gdb_name)) remote_name <- gdb_name
 

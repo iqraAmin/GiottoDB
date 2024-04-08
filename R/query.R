@@ -105,7 +105,7 @@ setMethod(
   'sql_query', signature(x = 'dbData', statement = 'character'),
   function(x, statement, drop = FALSE, ...)
   {
-    x = reconnect(x)
+    x = .reconnect(x)
 
     res <- sql_query(x[], statement, ...)
 
@@ -183,7 +183,7 @@ setMethod(
 setMethod('query', signature(x = 'dbSpatProxyData'),
           function(x, vars = NULL, where = NULL, extent = NULL, filter = NULL,
                    spatvector = FALSE, ...) {
-            x = reconnect(x)
+            x = .reconnect(x)
 
             # extent subsetting #
             if(!is.null(extent)) {

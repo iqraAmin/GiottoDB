@@ -17,7 +17,7 @@ Encoding: UTF-8
 LazyData: true
 URL: https://drieslab.github.io/GiottoDB/, https://github.com/drieslab/GiottoDB
 BugReports: https://github.com/drieslab/GiottoDB/issues
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Depends:
     base (>= 3.5.0),
     utils (>= 3.5.0),
@@ -30,20 +30,22 @@ Imports:
     digest,
     duckdb,
     dplyr,
-    fs,
     GiottoClass,
     GiottoUtils (>= 0.0.0.9005),
     methods,
     pool,
+    progressr,
     terra (>= 1.7),
     tidyr
 Suggests:
     arrow (>= 12.0.0),
     DelayedArray,
+    GiottoData,
     future,
     future.apply,
     future.callr,
     HDF5Array (>= 1.18.1),
+    Matrix,
     rhdf5,
     rstudioapi,
     testthat (>= 3.0.0),
@@ -57,7 +59,6 @@ Collate:
     'generics.R'
     'backend.R'
     'coerce.R'
-    'query.R'
     'extract.R'
     'connection.R'
     'data_input.R'
@@ -73,6 +74,7 @@ Collate:
     'names.R'
     'operations.R'
     'plot.R'
+    'query.R'
     'simulate.R'
     'spatial_chunking.R'
     'utils.R'

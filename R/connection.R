@@ -1,4 +1,12 @@
+#' @include package_imports.R
+#' @include classes.R
+#' @include generics.R
+NULL
 
+
+pool_closed <- function(x) {
+  x$counters$free + x$counters$taken == 0
+}
 
 
 
@@ -107,20 +115,40 @@ setMethod('is_init', signature(x = 'dbData'), function(x, ...) {
 
 
 
-# validBE ####
-#' @name validBE-generic
-#' @title Check if DB backend object has valid connection
-#' @aliases validBE
-#' @inheritParams db_params
+# dbIsValid ####
+#' @name dbIsValid
+#' @title Check if GiottoDB backend object has valid connection
+#' @description
+#' The method for `dbData` objects checks if they possess a pool that is valid.
+#' The methods for `gdbBackend` or `gdbBackendID` check if the backend has a
+#' valid connection. The two are not the same since if a `dbData` object does
+#' not have a valid connection, it can still pull a valid connection from the
+#' backend.
+#' @param dbObj GiottoDB object to check for database valid connection
+NULL
+
+#' @rdname dbIsValid
 #' @export
-setMethod('validBE', signature(x = 'dbData'), function(x) {
-  con = cPool(x)
-  if(is.null(con)) stop('No connection object found\n')
-  return(pool::dbIsValid(con))
+setMethod('dbIsValid', signature('dbData'), function(dbObj) {
+  p = cPool(x)
+  if(is.null(p)) stop('No connection object found\n')
+  return(pool::dbIsValid(p))
 })
 
+#' @rdname dbIsValid
+#' @export
+setMethod("dbIsValid", signature("gdbBackendID"), function(dbObj) {
+  p <- try({getBackendPool(dbObj)}, silent = TRUE)
+  if (inherits(p, "try-error")) return(FALSE)
+  return(dbIsValid(.DB_ENV[[dbObj]]))
+})
 
-
+#' @rdname dbIsValid
+#' @export
+setMethod("dbIsValid", signature("gdbBackend"), function(dbObj) {
+  p <- dbObj$pool
+  ifelse(pool::dbIsValid(p) && !pool_closed(p), TRUE, FALSE)
+})
 
 
 
@@ -131,7 +159,7 @@ setMethod('validBE', signature(x = 'dbData'), function(x) {
 #' @param ... additional params to pass
 #' @export
 setMethod('listTablesBE', signature(x = 'dbData'), function(x, ...) {
-  stopifnot(remoteValid(x))
+  stopifnot(dbIsValid(x))
   pool::dbListTables(cPool(x), ...)
 })
 
@@ -167,7 +195,7 @@ setMethod('listTablesBE', signature(x = 'ANY'), function(x, ...) {
 setMethod('existsTableBE',
           signature(x = 'dbData', remote_name = 'character'),
           function(x, remote_name, ...) {
-            stopifnot(remoteValid(x))
+            stopifnot(dbIsValid(x))
             extabs = pool::dbListTables(conn = cPool(x), ...)
             remote_name %in% extabs
           })
@@ -185,28 +213,6 @@ setMethod('existsTableBE',
 
 
 
-
-
-
-
-
-
-
-# disconnection ####
-
-#' @name disconnect
-#' @title Disconnect from database
-#' @description
-#' Disconnects from a database. Closes both the connection and driver objects
-#' by default
-#' @inheritParams db_params
-#' @export
-setMethod('disconnect', signature(x = 'dbData'), function(x, shutdown = TRUE) {
-  # already closed
-  if(!remoteValid(x)) return(x)
-  pool::poolClose(cPool(x), force = TRUE)
-  return(x)
-})
 
 
 
@@ -232,31 +238,41 @@ create_connection_pool = function(drv = 'duckdb::duckdb()',
 
 
 
+# dbBackend ####
 
-
-#' @title Create GiottoDB backend
-#' @name createBackend
+#' @title GiottoDB backend
+#' @name dbBackend
 #' @description
-#' Defines and creates a database connection pool to be used by the backend.
-#' This pool object and a backendInfo object that contains details about the
-#'
-#' @param drv database driver (default is duckdb::duckdb())
-#' @param dbdir directory to create a backend database
-#' @param extension file extension (default = '.duckdb')
+#' Defines and creates a database connection pool to be used by the backend
+#' when a database driver function is provided.
+#' When a `backendInfo` or `list` input is provided to `x` param instead, a
+#' reconnection to an existing GiottoDB backend will be performed.
+#' @param x database driver (default is duckdb::duckdb()), `backendInfo` object,
+#' or or list of 1. DB driver call in string format, 2. path to the existing DB
+#' file.
 #' @param with_login (default = FALSE) whether a login is needed
 #' @param verbose be verbose
 #' @param ... additional params to pass to pool::dbPool()
-#' @return invisibly returns backend ID
-#' @export
-createBackend = function(drv = duckdb::duckdb(),
-                         dbdir = ':temp:',
-                         extension = '.duckdb',
-                         with_login = FALSE,
-                         verbose = TRUE,
-                         ...) {
+#' @returns invisibly returns backend ID
+NULL
 
+
+#' @rdname dbBackend
+#' @param dbdir directory to create a backend database
+#' @param factory a function called to create database driver objects for the
+#' backend. Default is `duckdb::duckdb()`
+#' @param extension file extension (default = '.duckdb')
+#' @export
+setMethod("dbBackend", signature("missing"), function(
+    dbdir = ":temp:",
+    factory = duckdb::duckdb(),
+    extension = ".duckdb",
+    with_login = FALSE,
+    verbose = TRUE,
+    ...
+  ) {
   # store driver call as a string
-  drv_call = deparse(substitute(drv))
+  drv_call = deparse(substitute(factory))
 
   # setup database filepath
   dbpath = set_db_path(path = dbdir, extension = extension, verbose = verbose)
@@ -288,16 +304,116 @@ createBackend = function(drv = duckdb::duckdb(),
   # get connection pool and store info
   con_pool = do.call(what = 'create_connection_pool', args = list_args)
 
-  backend_list = list(info = gdb_info,
-                      pool = con_pool)
+  b <- new("gdbBackend")
+  b$info <- gdb_info
+  b$pool <- con_pool
 
-  .DB_ENV[[backendID(gdb_info)]] = backend_list
+  .DB_ENV[[backendID(gdb_info)]] = b
   invisible(backendID(gdb_info))
-}
+})
+
+#' @rdname dbBackend
+#' @export
+setMethod(
+  'dbBackend', signature('backendInfo'),
+  function(x, with_login = FALSE, verbose = TRUE, ...)
+  {
+    b_ID = backendID(x)
+    p <- .DB_ENV[[b_ID]]$pool
+    # if already valid, exit
+    try_val = try(DBI::dbIsValid(p), silent = TRUE)
+    # updated for changes in how pool is behaving where it is valid, but
+    # can have no available handles
+    if(isTRUE(try_val) && !pool_closed(p)) return(invisible(b_ID))
+
+
+    # assemble params
+    list_args = list(...)
+    if(isTRUE(with_login)) { # check login details
+      if(is.null(list_args$user)) list_args$user = Sys.getenv('DB_USERNAME')
+      if(is.null(list_args$pass)) {
+        if(requireNamespace('rstudioapi', quietly = TRUE)) {
+          list_args$pass =
+            Sys.getenv('DB_PASSWORD', rstudioapi::askForPassword('Database Password'))
+        } else {
+          list_args$pass = Sys.getenv('DB_PASSWORD')
+        }
+      }
+    }
+    list_args$drv = x@driver_call
+    list_args$dbdir = x@db_path
+
+    # regenerate connection pool object
+    con_pool = do.call(what = create_connection_pool, args = list_args)
+
+    b <- new("gdbBackend")
+    b$info <- x
+    b$pool <- con_pool
+
+    .DB_ENV[[b_ID]] <- b
+
+    return(invisible(b_ID))
+  })
+
+# for reconnects where a backend info is not available.
+#' @rdname dbBackend
+#' @export
+setMethod(
+  'dbBackend', signature('list'),
+  function(x, with_login = FALSE, verbose = TRUE, ...)
+  {
+    dbdrv <- x[[1]]
+    dbpath <- normalizePath(x[[2]])
+
+    if (!inherits(dbdrv, "character")) {
+      stopf(
+        "dbBackend:
+        First value in list must be a DB driver function call written as character
+        e.g: \"duckdb::duckdb()\""
+      )
+    }
+    if (!inherits(dbpath, 'character')) {
+      stopf(
+        "dbBackend:
+        Second value in list must be a filepath to the DB"
+      )
+    }
+
+
+    # test the driver to be functional in memory
+    test_db_path = paste0(tempdir(), '/test.db')
+    test_res <- try(create_connection_pool(dbdrv, dbdir = test_db_path),
+                    silent = TRUE)
+    if (!inherits(test_res, 'try-error')) {
+      on.exit(pool::poolClose(test_res), add = TRUE)
+      on.exit(file.remove(test_db_path), add = TRUE)
+    } else {
+      stopf(
+        "dbBackend:
+        First value in list must be a DB driver function call written as character
+        e.g: \"duckdb::duckdb()\""
+      )
+    }
+
+    # create backend info
+    bInfo <- new(
+      'backendInfo',
+      driver_call = dbdrv,
+      db_path = dbpath,
+      hash = calculate_backend_id(dbpath)
+    )
+
+    # attempt reconnect
+    dbBackend(x = bInfo, ...)
+  }
+)
 
 
 
 
+
+
+# .DB_ENV getters ####
 
 #' @title Get the backend details environment
 #' @name getBackendEnv
@@ -521,143 +637,80 @@ conn_to_id <- function(x) {
 
 
 
-# reconnectBackend ####
 
-#' @title Reconnect GiottoDB backend
-#' @name reconnectBackend
-#' @aliases reconnectBackend
-#' @param x backendInfo object or list of 1. DB driver call in string format,
-#' 2. path to the existing DB file.
-#' @param with_login (default = FALSE) flag to check R environment variables
-#' @param verbose be verbose
-#' @param ... additional params to pass
-#' for login info and/or prompt for password
-#' @export
-setMethod(
-  'reconnectBackend', signature('backendInfo'),
-  function(x, with_login = FALSE, verbose = TRUE, ...)
-{
-  b_ID = backendID(x)
-  p <- .DB_ENV[[b_ID]]$pool
-  # if already valid, exit
-  try_val = try(DBI::dbIsValid(p), silent = TRUE)
-  # updated for changes in how pool is behaving where it is valid, but
-  # can have no available handles
-  if(isTRUE(try_val) && p$counters$free > 0) return(invisible(b_ID))
+# dbBackendClose ####
 
-
-  # assemble params
-  list_args = list(...)
-  if(isTRUE(with_login)) { # check login details
-    if(is.null(list_args$user)) list_args$user = Sys.getenv('DB_USERNAME')
-    if(is.null(list_args$pass)) {
-      if(requireNamespace('rstudioapi', quietly = TRUE)) {
-        list_args$pass =
-          Sys.getenv('DB_PASSWORD', rstudioapi::askForPassword('Database Password'))
-      } else {
-        list_args$pass = Sys.getenv('DB_PASSWORD')
-      }
-    }
-  }
-  list_args$drv = x@driver_call
-  list_args$dbdir = x@db_path
-
-  # regenerate connection pool object
-  con_pool = do.call(what = create_connection_pool, args = list_args)
-  .DB_ENV[[b_ID]]$pool <- con_pool
-  .DB_ENV[[b_ID]]$info <- x
-
-  return(invisible(b_ID))
-})
-
-
-#' @rdname reconnectBackend
-#' @export
-setMethod(
-  'reconnectBackend', signature('list'),
-  function(x, with_login = FALSE, verbose = TRUE, ...)
-  {
-    dbdrv <- x[[1]]
-    dbpath <- normalizePath(x[[2]])
-
-    if (!inherits(dbdrv, "character")) {
-      stopf(
-        "reconnectBackend:
-        First value in list must be a DB driver function call written as character
-        e.g: \"duckdb::duckdb()\""
-      )
-    }
-    if (!inherits(dbpath, 'character')) {
-      stopf(
-        "reconnectBackend:
-        Second value in list must be a filepath to the DB"
-      )
-    }
-
-
-    # test the driver to be functional in memory
-    test_db_path = paste0(tempdir(), '/test.db')
-    test_res <- try(create_connection_pool(dbdrv, dbdir = test_db_path),
-                    silent = TRUE)
-    if (!inherits(test_res, 'try-error')) {
-      on.exit(pool::poolClose(test_res), add = TRUE)
-      on.exit(file.remove(test_db_path), add = TRUE)
-    } else {
-      stopf(
-        "reconnectBackend:
-        First value in list must be a DB driver function call written as character
-        e.g: \"duckdb::duckdb()\""
-      )
-    }
-
-    # create backend info
-    bInfo <- new(
-      'backendInfo',
-      driver_call = dbdrv,
-      db_path = dbpath,
-      hash = calculate_backend_id(dbpath)
-    )
-
-    # attempt reconnect
-    reconnectBackend(x = bInfo, ...)
-  }
-)
-
-
-
-
-
-#' @name closeBackend
-#' @title Close backend connection pool
+#' @name dbBackendClose
+#' @title Disconnect backend from database
 #' @description
 #' Closes pools. If specific backend_ID(s) are given then those will be closed.
 #' When no specific ID is given, all existing backends will be closed.
-#' @param backend_ID hashID of backend to close (optional)
+#' If a `dbData` object is provided instead, closes the associated backend.
+#' @param x `gdbBackendID` of backend to close (optional) or `dbData`
+#' @returns NULL invisibly
+NULL
+
+
+#' @rdname dbBackendClose
 #' @export
-closeBackend = function(backend_ID) {
+setMethod("dbBackendClose", signature("gdbBackendID"), function(x, ...) {
+  dbBackendClose(.DB_ENV[[x]])
+})
 
-  if(missing(backend_ID)) {
-    backend_ID = ls(.DB_ENV)
-  }
+#' @rdname dbBackendClose
+#' @export
+setMethod("dbBackendClose", signature("gdbBackend"), function(x, ...) {
+  if(!dbIsValid(x$pool)) return(invisible())
+  dots <- list(...)
+  if (is.null(dots$shutdown)) dots$shutdown <- TRUE
+  # dbDisconnect is not supported for `pool` objects
+  con <- pool::poolCheckout(x$pool)
+  do.call(pool::dbDisconnect, args = c(list(conn = con), dots))
+  pool::poolReturn(con)
+  # normally throws warning that connection is already closed
+  if (!pool_closed(x$pool)) suppressWarnings(pool::poolClose(x$pool))
+  return(invisible(NULL))
+})
 
-  lapply(backend_ID, function(x) {
-    conn = getBackendConn(x)
-    DBI::dbDisconnect(conn, shutdown = TRUE)
-    pool::poolReturn(conn)
-    suppressWarnings(pool::poolClose(getBackendPool(x)))
-  })
-
+#' @rdname dbBackendClose
+#' @export
+setMethod('dbBackendClose', signature('dbData'), function(x, shutdown = TRUE) {
+  # already closed
+  if(!dbIsValid(x)) return(invisible())
+  pool::poolClose(cPool(x), force = TRUE)
   return(invisible())
-}
+})
 
-
-
-
-#' @name existingHashIDs
-#' @title Get all existing backend hash IDs
+#' @rdname dbBackendClose
 #' @export
-existingHashIDs = function() {
-  ls(.DB_ENV)
+setMethod("dbBackendClose", signature("environment"), function(x, ...) {
+  lapply(x, function(id) {
+    dbBackendClose(id)
+  })
+  return(invisible())
+})
+
+#' @rdname dbBackendClose
+#' @export
+setMethod("dbBackendClose", signature("missing"), function() {
+  dbBackendClose(.DB_ENV)
+})
+
+
+
+#' @name dbBackendList
+#' @title Existing GiottoDB backends info
+#' @returns data.table of backend IDs and database paths
+#' @examples
+#' dbBackend()
+#' dbBackendList()
+#' @export
+dbBackendList <- function() {
+  info <- lapply(as.list(.DB_ENV), function(b) b$info@db_path)
+  data.table::data.table(
+    ID = names(info),
+    path = as.character(info)
+  )
 }
 
 
@@ -665,44 +718,41 @@ existingHashIDs = function() {
 
 # dbData reconnection ####
 
-#' @name reconnect
-#' @title Reconnect to backend
-#' @description
-#' Checks if the object still has a valid connection. If it does then it returns
-#' the object without modification. If it does need reconnection then a copy of
-#' the associated active connection pool object is pulled from .DB_ENV and if
-#' that is also closed, an error is thrown asking for a reconnectBackend() run.
-#'
-#' Also ensures that the object contains a reference to a valid table within
-#' the database. Runs at the beginning of most function calls involving
-#' dbData object queries.
-#' @inheritParams db_params
-#' @include query.R
-#' @export
-setMethod('reconnect', signature(x = 'dbData'),
-          function(x) {
+# For data representations:
+# Checks if the object still has a valid connection. If it does then it returns
+# the object without modification. If it does need reconnection then a copy of
+# the associated active connection pool object is pulled from .DB_ENV and if
+# that is also closed, an error is thrown asking for a the backend to be
+# reconnected.
+#
+# Also ensures that the object contains a reference to a valid table within
+# the database. Runs at the beginning of most function calls involving
+# dbData object queries.
+# internal .reconnect method
+setMethod(
+  '.reconnect', signature(x = 'dbData'),
+  function(x) {
 
-            # if connection is still active, return directly
-            if(validBE(x)) return(x)
+    # if connection is still active, return directly
+    if(dbIsValid(x)) return(x)
 
+    # otherwise get conn pool
+    p = .DB_ENV[[x@hash]]$pool
+    if(!dbIsValid(p)) {
+      stopf(sprintf('invalid backend [%s]\n', x@hash),
+            "Reconnect the backend or create a new one.")
+    }
 
-            # otherwise get conn pool
-            p = .DB_ENV[[x@hash]]$pool
-            if(!validBE(p)) {
-              stopf('Backend needs to be created or reconnected.
-                    Run reconnectBackend()?')
-            }
+    cPool(x) <- p
 
-            cPool(x) = p
+    if(!x@remote_name %in% listTablesBE(x)) {
+      stopf('Object reconnection attempted, but table of name', x@remote_name,
+            'not found in db connection.\n',
+            'Memory-only table that was never written to DB?')
+    }
 
-            if(!x@remote_name %in% listTablesBE(x)) {
-              stopf('Reconnection attempted, but table of name', x@remote_name,
-                    'not found in db connection.\n',
-                    'Memory-only table that was never written to DB?')
-            }
-
-            return(initialize(x))
-          })
+    return(initialize(x))
+  })
 
 
 

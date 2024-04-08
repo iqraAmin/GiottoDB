@@ -125,7 +125,7 @@ evaluate_dbdataframe = function(input, p, backend_ID, remote_name, nlines,
 #' @param x dbDataFrame
 #' @param value character. Column to set as key
 #' @examples
-#' d <- simulate_dbDataFrame()
+#' d <- sim_dbDataFrame()
 #' keyCol(d) <- c('Sepal.Length', 'Sepal.Width')
 #' d[1:6,]
 #' @export
