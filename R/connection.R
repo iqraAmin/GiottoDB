@@ -132,7 +132,7 @@ NULL
 setMethod('dbIsValid', signature('dbData'), function(dbObj) {
   p = cPool(dbObj)
   if(is.null(p)) stop('No connection object found\n')
-  return(pool::dbIsValid(p))
+  ifelse(pool::dbIsValid(p) && !pool_closed(p), TRUE, FALSE)
 })
 
 #' @rdname dbIsValid
