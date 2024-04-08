@@ -781,11 +781,11 @@ loadGDB <- function(file, silent = TRUE) {
   if (silent) {
     f <- file(tempfile(), open = "wt")
     sink(f, type = "message")
-    on.exit(sink(), type = "message")
+    on.exit(sink(type = "message"))
   }
+
   x <- readRDS(file)
-  x <- force(initialize(x))
-  return(x)
+  return(force(initialize(x)))
 }
 
 
