@@ -35,36 +35,41 @@ setMethod('initialize', signature(.Object = 'backendInfo'),
 # represent the information
 # NOTE: DB table writing is handled externally to this initialize function.
 # see the relevant create_ functions
-setMethod('initialize', signature(.Object = 'dbData'),
-          function(.Object, data, hash, remote_name, init, ...) {
+setMethod(
+  'initialize', signature(.Object = 'dbData'),
+  function(.Object, data, hash, remote_name, init, ...) {
 
-            # data input
-            if(!missing(remote_name)) .Object@remote_name = remote_name
-            if(!missing(hash)) .Object@hash = hash
-            if(!missing(data)) .Object@data = data
-            if(!missing(init)) .Object@init = init
+    # data input
+    if(!missing(remote_name)) .Object@remote_name = remote_name
+    if(!missing(hash)) .Object@hash = hash
+    if(!missing(data)) .Object@data = data
+    if(!missing(init)) .Object@init = init
 
-            # try to generate if lazy table does not exist
-            # the hash and remote_name are needed for this
-            if(is.null(.Object@data)) {
-              if(!is.na(.Object@hash) & !is.na(.Object@remote_name)) {
-                p = getBackendPool(backend_ID = .Object@hash)
-                tBE = tableBE(cPool = p, remote_name = remote_name)
-                .Object@data = tBE
-                .Object@init = TRUE # flag as fully initialized
-              }
-            }
+    # try to generate if lazy table does not exist
+    # the hash and remote_name are needed for this
+    if(is.null(.Object@data)) {
+      if(!is.na(.Object@hash) & !is.na(.Object@remote_name)) {
+        p = getBackendPool(backend_ID = .Object@hash)
+        tBE = tableBE(cPool = p, remote_name = remote_name)
+        .Object@data = tBE
+        .Object@init = TRUE # flag as fully initialized
+      }
+    }
 
-            if(is.null(.Object@data)) {
-              stopf('data slot must contain a dplyr lazy table connected to the database backend')
-            }
-            if(!inherits(.Object@data, 'tbl_Pool')) {
-              stopf('data slot only accepts dplyr class "tbl_Pool"')
-            }
+    # for loading from file
+    if (.Object$init) .Object <- .reconnect(.Object)
 
-            validObject(.Object)
-            return(.Object)
-          })
+    if(is.null(.Object@data)) {
+      stopf('data slot must contain a dplyr lazy table connected to the database backend')
+    }
+    if(!inherits(.Object@data, 'tbl_Pool')) {
+      stopf('data slot only accepts dplyr class "tbl_Pool"')
+    }
+
+    validObject(.Object)
+    return(.Object)
+  }
+)
 
 
 
