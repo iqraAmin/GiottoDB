@@ -4,23 +4,15 @@
 \alias{loadGDB}
 \title{Load a GiottoDB dbData object}
 \usage{
-loadGDB(file, silent = TRUE)
+loadGDB(file)
 }
 \arguments{
 \item{file}{filepath}
-
-\item{silent}{silences read-in console prints}
 }
 \value{
 loaded in `dbData` object
 }
 \description{
-Loads a GiottoDB `dbData` object with `readRDS()`. Also performs
-initialization to repair the database connection.
-}
-\details{
-Some warnings and messages are expected when loading GiottoDB `dbData`
-objects due to the way that pool and dplyr work. These are diverted to a
-temporary file with `sink()` if `silent` is TRUE. These messages should
-have no effect on function.
+Loads a GiottoDB `dbData` object with `readRDS()`. Repairs
+object connection to database backend.
 }
