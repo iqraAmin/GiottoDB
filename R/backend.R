@@ -57,7 +57,7 @@ setMethod(
     }
 
     # for loading from file
-    if (.Object$init) .Object <- .reconnect(.Object)
+    if (.Object@init) .Object <- .reconnect(.Object)
 
     if(is.null(.Object@data)) {
       stopf('data slot must contain a dplyr lazy table connected to the database backend')
