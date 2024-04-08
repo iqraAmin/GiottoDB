@@ -756,9 +756,37 @@ setMethod(
 
 
 
-
-
-
+#' @title Load a GiottoDB dbData object
+#' @name loadGDB
+#' @description Loads a GiottoDB `dbData` object with `readRDS()`. Also performs
+#' initialization to repair the database connection.
+#' @param file filepath
+#' @param silent silences read-in console prints
+#' @details
+#' Some warnings and messages are expected when loading GiottoDB `dbData`
+#' objects due to the way that pool and dplyr work. These are diverted to a
+#' temporary file with `sink()` if `silent` is TRUE. These messages should
+#' have no effect on function.
+#' @returns loaded in `dbData` object
+#' @export
+loadGDB <- function(file, silent = TRUE) {
+  checkmate::assert_file_exists(file)
+  # Some warnings and messages are expected:
+  # <pool> Failed to activate and/or validate existing object.
+  # <pool> Trying again with a new object.
+  # Error: rapi_unlock: Invalid database reference
+  # In addition: Warning message:
+  #   Connection already closed.
+  # These are silenced by diverting them to a tempfile sink
+  if (silent) {
+    f <- file(tempfile(), open = "wt")
+    sink(f, type = "message")
+    on.exit(sink())
+  }
+  x <- readRDS(file)
+  x <- force(initialize(x))
+  return(x)
+}
 
 
 
