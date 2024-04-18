@@ -2,9 +2,15 @@
 % Please edit documentation in R/data_input.R
 \name{stream_reader_fun}
 \alias{stream_reader_fun}
+\alias{stream_reader_fread}
+\alias{stream_reader_arrow}
 \alias{stream_reader_gef_tx}
 \title{Streamable reader functions for specific file formats}
 \usage{
+stream_reader_fread(x, n, i, header = NULL, ...)
+
+stream_reader_arrow(x, n, i, delim = ",", ...)
+
 stream_reader_gef_tx(
   x,
   n = 4000L,
@@ -20,7 +26,15 @@ stream_reader_gef_tx(
 
 \item{i}{'i'th round of reading (0 indexed)}
 
-\item{bin_size}{.gef data bin size to use}
+\item{header}{Whether the file has a header with colnames. Should never be
+set to TRUE. Either leave as default or set FALSE when no colnames line
+is present.}
+
+\item{...}{additional params to pass to the specific reading function}
+
+\item{delim}{delimiting character. Default is "," (csv)}
+
+\item{bin_size}{.gef bin size to use (default is "bin100")}
 
 \item{output}{return as DT (data.table) or SV (terra SpatVector)}
 }
@@ -35,3 +49,13 @@ Rules:\cr
 read_fun must not throw error when fewer are read than expected.\cr
 read_fun must not throw error when 0 are found.
 }
+\section{Functions}{
+\itemize{
+\item \code{stream_reader_fread()}: data.table `fread()` chunked reads
+
+\item \code{stream_reader_arrow()}: arrow chunked reads for delimited files
+
+\item \code{stream_reader_gef_tx()}: chunked reads of .gef/.bgef stereoseq files
+while treating them as spatial points/transcripts info
+
+}}

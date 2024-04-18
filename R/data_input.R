@@ -951,15 +951,69 @@ setMethod(
 #' @param x reader input. Usually character filepath to file
 #' @param n units (however defined in reader) to read per round
 #' @param i 'i'th round of reading (0 indexed)
-#' @param bin_size .gef bin size to use (default is "bin100")
-#' @param output return as DT (data.table) or SV (terra SpatVector)
+#' @param ... additional params to pass to the specific reading function
 #' @details
 #' Rules:\cr
 #' read_fun must not throw error when fewer are read than expected.\cr
 #' read_fun must not throw error when 0 are found.
+NULL
 
-#' @rdname stream_reader_fun
-#' @param bin_size .gef data bin size to use
+#' @describeIn stream_reader_fun data.table `fread()` chunked reads
+#' @param header Whether the file has a header with colnames. Should never be
+#' set to TRUE. Either leave as default or set FALSE when no colnames line
+#' is present.
+#' @export
+stream_reader_fread <- function(x, n, i, header = NULL, ...) {
+  nskip <- n * i
+  if (isTRUE(header)) {
+    stop("<stream_freader> `header` cannot be TRUE",
+         call. = FALSE)
+  }
+  if (is.null(header)) {
+    header <- i == 0
+    # add 1 to nskips when header is not specified as FALSE
+    # this is to prevent a doublecount at the end of the first and start of
+    # the second chunk.
+    nskip <- nskip + as.integer(!header)
+  }
+  # read the chunk in
+  chunk <- tryCatch(
+    data.table::fread(
+      input = x,
+      nrows = n,
+      skip = nskip,
+      header = header,
+      ...
+    ),
+    # create a null DT if `nskip` is exactly the number of entries in the file
+    # (something that usually throws an error with data.table)
+    # We just want to create an empty DT instead to trigger the stop condition
+    # which is nrow = 0 by default
+    error = function(e) data.table::data.table()
+  )
+  return(chunk)
+}
+
+#' @describeIn stream_reader_fun arrow chunked reads for delimited files
+#' @param delim delimiting character. Default is "," (csv)
+#' @export
+stream_reader_arrow <- function(x, n, i, delim = ",", ...) {
+  idx_start <- (n * i) + 1
+  idx_end <- idx_start + n - 1
+  idx <- idx_start:idx_end
+  a <- arrow::open_delim_dataset(
+    sources = x,
+    delim = delim,
+    ...
+  )
+  chunk <- a[idx,] %>% dplyr::collect()
+  return(chunk)
+}
+
+#' @describeIn stream_reader_fun chunked reads of .gef/.bgef stereoseq files
+#' while treating them as spatial points/transcripts info
+#' @param bin_size .gef bin size to use (default is "bin100")
+#' @param output return as DT (data.table) or SV (terra SpatVector)
 #' @export
 stream_reader_gef_tx <- function(x,
                                  n = 4000L,
