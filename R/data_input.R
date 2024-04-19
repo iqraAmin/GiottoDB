@@ -994,21 +994,20 @@ stream_reader_fread <- function(x, n, i, header = NULL, ...) {
   return(chunk)
 }
 
-#' @describeIn stream_reader_fun arrow chunked reads for delimited files
-#' @param delim delimiting character. Default is "," (csv)
-#' @export
-stream_reader_arrow <- function(x, n, i, delim = ",", ...) {
-  idx_start <- (n * i) + 1
-  idx_end <- idx_start + n - 1
-  idx <- idx_start:idx_end
-  a <- arrow::open_delim_dataset(
-    sources = x,
-    delim = delim,
-    ...
-  )
-  chunk <- a[idx,] %>% dplyr::collect()
-  return(chunk)
-}
+# TODO need to make sure that it can safely ignore indices greater than
+# requested. Perhaps through `skip` and `dplyr::slice_head()`
+# stream_reader_arrow <- function(x, n, i, delim = ",", ...) {
+#   idx_start <- (n * i) + 1
+#   idx_end <- idx_start + n - 1
+#   idx <- idx_start:idx_end
+#   a <- arrow::open_delim_dataset(
+#     sources = x,
+#     delim = delim,
+#     ...
+#   )
+#   chunk <- a[idx,] %>% dplyr::collect()
+#   return(chunk)
+# }
 
 #' @describeIn stream_reader_fun chunked reads of .gef/.bgef stereoseq files
 #' while treating them as spatial points/transcripts info

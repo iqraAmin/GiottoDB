@@ -3,13 +3,10 @@
 \name{stream_reader_fun}
 \alias{stream_reader_fun}
 \alias{stream_reader_fread}
-\alias{stream_reader_arrow}
 \alias{stream_reader_gef_tx}
 \title{Streamable reader functions for specific file formats}
 \usage{
 stream_reader_fread(x, n, i, header = NULL, ...)
-
-stream_reader_arrow(x, n, i, delim = ",", ...)
 
 stream_reader_gef_tx(
   x,
@@ -32,8 +29,6 @@ is present.}
 
 \item{...}{additional params to pass to the specific reading function}
 
-\item{delim}{delimiting character. Default is "," (csv)}
-
 \item{bin_size}{.gef bin size to use (default is "bin100")}
 
 \item{output}{return as DT (data.table) or SV (terra SpatVector)}
@@ -52,8 +47,6 @@ read_fun must not throw error when 0 are found.
 \section{Functions}{
 \itemize{
 \item \code{stream_reader_fread()}: data.table `fread()` chunked reads
-
-\item \code{stream_reader_arrow()}: arrow chunked reads for delimited files
 
 \item \code{stream_reader_gef_tx()}: chunked reads of .gef/.bgef stereoseq files
 while treating them as spatial points/transcripts info
