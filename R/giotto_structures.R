@@ -193,6 +193,45 @@ setMethod(
   }
 )
 
+# * dbSpatial dbSpatial ####
+#' @rdname calculateOverlap
+#' @export
+setMethod(
+    "calculateOverlap", signature(x = "dbSpatial", y = "dbSpatial"),
+    function(x, y,
+    poly_subset_ids = NULL,
+    feat_subset_column = NULL,
+    feat_subset_ids = NULL,
+    count_info_column = NULL,
+    verbose = TRUE) {
+        checkmate::assert_true(is(x, "dbSpatial")) 
+        checkmate::assert_true(is(x, "dbSpatial")) 
+        # if (!is.null(poly_subset_ids)) {
+        #     checkmate::assert_character(poly_subset_ids)
+        # }
+
+        # subset points and polys if needed
+        # * subset x
+        # if (!is.null(poly_subset_ids)) {
+        #     x <- x[x$poly_ID %in% poly_subset_ids]
+        # }
+
+        # * subset points if needed
+        # e.g. to select transcripts within a z-plane
+        # if (!is.null(feat_subset_column) && !is.null(feat_subset_ids)) {
+        #     bool_vector <- y[[feat_subset_column]][[1]] %in% feat_subset_ids
+        #     y <- y[bool_vector]
+        # }
+
+        # FIXME: st_intersects implementation @iqraAmin implement this internal function
+        .calculate_overlap_dbSpatial(
+            polyvec = x,
+            pointvec = y,
+            # count_info_column = count_info_column,
+            verbose = verbose
+        )
+    }
+)
 
 # ------------------------------------------------------- #
 # aggregation of counts features (by summing with groups) *
@@ -306,6 +345,125 @@ setMethod(
 
     return(res)
   }
+)
+
+# * dbSpatial ####
+# points
+#' @rdname overlapToMatrix
+#' @param col_names,row_names character vector. (optional) Set of row and col
+#' names that are expected to exist. This fixes the dimensions of the matrix
+#' since the overlaps information does not directly report rows and cols where
+#' no values were detected.
+#' @export
+setMethod(
+    "overlapToMatrix", signature("dbSpatial"), function(x,
+    col_names = NULL,
+    row_names = NULL,
+    count_info_column = NULL,
+    output = c("Matrix", "data.table"),
+    verbose = TRUE,
+    ...) {
+        output <- match.arg(
+            toupper(output),
+            choices = c("MATRIX", "DATA.TABLE")
+        )
+
+        # NSE vars
+        poly_ID <- NULL
+
+        # Note: not needed because NA values are automatically removed in DB
+        # 1. convert to DT and cleanup
+        # dtoverlap <- data.table::as.data.table(x, geom = c("XY"))
+        # # remove points that have no overlap with any polygons
+        # dtoverlap <- dtoverlap[!is.na(poly_ID)]
+
+
+        # 2. Perform aggregation to counts DT
+        if (!is.null(count_info_column)) { # if there is a counts col
+            .gstop("Not yet implemented for dbSpatial objects")
+
+            # if (!count_info_column %in% colnames(dtoverlap)) {
+            #     .gstop("count_info_column ", count_info_column,
+            #         " does not exist",
+            #         .n = 2L
+            #     )
+            # }
+
+            # # aggregate counts of features
+            # dtoverlap[, c(count_info_column) := as.numeric(
+            #     get(count_info_column)
+            # )]
+            # aggr_dtoverlap <- dtoverlap[, base::sum(get(count_info_column)),
+            #     by = c("poly_ID", "feat_ID")
+            # ]
+            # data.table::setnames(aggr_dtoverlap, "V1", "N")
+        } else { # if no counts col
+
+            # aggregate individual features
+            # TODO @iqraAmin using dbMatrix:::dbMatrix_from_tbl
+            # https://github.com/drieslab/dbMatrix/blob/2c41e968c37cc7fa7f9c217e588b00cdbac3e159/R/dbMatrix.R#L761-L875
+            aggr_dtoverlap <- dtoverlap[, .N, by = c("poly_ID", "feat_ID")]
+        }
+
+        # 3. missing IDs repair
+
+        if (!is.null(col_names) && !is.null(row_names)) {
+          # TODO @iqraAmin
+            # get all feature and cell information
+            missing_feats <- row_names[!row_names %in%
+                unique(aggr_dtoverlap$feat_ID)]
+            missing_ids <- col_names[!col_names %in%
+                unique(aggr_dtoverlap$poly_ID)]
+
+            # create missing cell values, only if there are missing cell IDs!
+            if (!length(missing_ids) == 0) {
+                first_feature <- aggr_dtoverlap[["feat_ID"]][[1]]
+                missing_dt <- data.table::data.table(
+                    poly_ID = missing_ids,
+                    feat_ID = first_feature, N = 0
+                )
+                aggr_dtoverlap <- rbind(aggr_dtoverlap, missing_dt)
+            }
+
+            if (!length(missing_feats) == 0) {
+                first_cell <- aggr_dtoverlap[["poly_ID"]][[1]]
+                missing_dt <- data.table::data.table(
+                    poly_ID = first_cell,
+                    feat_ID = missing_feats, N = 0
+                )
+                aggr_dtoverlap <- rbind(aggr_dtoverlap, missing_dt)
+            }
+
+            # TODO: creating missing feature values
+        } else {
+            if (isTRUE(verbose) && output == "MATRIX") {
+                warning(GiottoUtils::wrap_txt(
+                    "[overlapToMatrix] expected col_names and row_names
+                    not provided together. Points aggregation Matrix output
+                    may be missing some cols and rows where no detections
+                    were found."
+                ), call. = FALSE)
+            }
+        }
+
+
+        # 4. return
+        # TODO: @iqraAmin 
+        switch(output,
+            "DATA.TABLE" = return(aggr_dtoverlap),
+            "MATRIX" = {
+                # create matrix
+                # overlapmatrixDT <- dbMatrix::as.matrix(aggr_dtoverlap) @iqraAmin
+                overlapmatrixDT <- data.table::dcast(
+                    data = aggr_dtoverlap,
+                    formula = feat_ID ~ poly_ID,
+                    value.var = "N",
+                    fill = 0
+                )
+                return(dt_to_matrix(overlapmatrixDT))
+            }
+        )
+    }
 )
 
 
