@@ -70,11 +70,11 @@ setMethod(
                         ...) {
   tbl <- dbSpatial[]
   con <- dbplyr::remote_con(tbl)
-  dbSpatial::.check_con(conn = con)
-  dbSpatial::.check_name(name = name)
-  dbSpatial::.check_tbl(tbl = tbl)
-  dbSpatial::.check_geomName(value = tbl, geomName = geomName)
-  dbSpatial::.check_overwrite(conn = con, overwrite = overwrite, name = name)
+  dbSpatial:::.check_con(conn = con)
+  dbSpatial:::.check_name(name = name)
+  dbSpatial:::.check_tbl(tbl = tbl)
+  dbSpatial:::.check_geomName(value = tbl, geomName = geomName)
+  dbSpatial:::.check_overwrite(conn = con, overwrite = overwrite, name = name)
 
   if (!shape %in% c("hexagon", "square")) {
     stop("shape must be either 'hexagon' or 'square'")
