@@ -80,6 +80,7 @@ Collate:
     'query.R'
     'simulate.R'
     'spatial_chunking.R'
+    'tessellate.R'
     'utils.R'
     'zzz.R'
 VignetteBuilder: knitr
