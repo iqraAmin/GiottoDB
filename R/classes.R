@@ -27,21 +27,21 @@ setClass('GiottoDB', contains = 'VIRTUAL')
 #' @slot remote_name name of table within database that contains the data
 #' @slot init logical. Whether the object is fully initialized
 #' @noRd
-setClass('dbData',
-         contains = c('GiottoDB',
-                      'VIRTUAL'),
-         slots = list(
-           data = 'ANY',
-           hash = 'character',
-           remote_name = 'character',
-           init = 'logical'
-         ),
-         prototype = list(
-           data = NULL,
-           hash = NA_character_,
-           remote_name = NA_character_,
-           init = FALSE
-         ))
+# setClass('dbData',
+#          contains = c('GiottoDB',
+#                       'VIRTUAL'),
+#          slots = list(
+#            data = 'ANY',
+#            hash = 'character',
+#            remote_name = 'character',
+#            init = 'logical'
+#          ),
+#          prototype = list(
+#            data = NULL,
+#            hash = NA_character_,
+#            remote_name = NA_character_,
+#            init = FALSE
+#          ))
 
 
 
